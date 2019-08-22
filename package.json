@@ -1,0 +1,33 @@
+{
+  "name": "js13k-jewelsback",
+  "description": "A match-3 inspired game created for the js13kGames competition",
+  "version": "1.0.0",
+  "keywords": [
+    "js13k",
+    "js13kGames",
+    "match-3",
+    "jewels"
+  ],
+  "author": "Erick Eduardo Petrucelli <erick.petrucelli@fatectq.edu.br>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "parcel src/index.pug -p 8080",
+    "build:clear": "node ./build/clear.js",
+    "build:parcel": "parcel build src/index.pug -d ./dist/bundled --no-source-maps",
+    "build:inline": "html-inline -i ./dist/bundled/index.html -o ./dist/inlined/index.html",
+    "build:zip": "node ./build/zip.js",
+    "build": "npm run build:clear && npm run build:parcel && npm run build:inline && npm run build:zip",
+    "build:check": "node ./build/check.js",
+    "finish": "npm run build && npm run build:check"
+  },
+  "devDependencies": {
+    "archiver": "^3.1.1",
+    "chalk": "^2.4.2",
+    "html-inline": "^1.2.0",
+    "mkdirp": "^0.5.1",
+    "parcel": "^1.12.3",
+    "pug": "^2.0.4",
+    "rimraf": "^3.0.0",
+    "stylus": "^0.54.5"
+  }
+}
