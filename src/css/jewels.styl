@@ -1,0 +1,83 @@
+$color-square = #f3372a
+$color-diamond = #f5d10c
+$color-circle = #efeaeb
+$color-triangle = #44d82c
+$color-hexagon = #2a5bf3
+
+.jewel
+  box-sizing: border-box
+  width: calc(100% - 1rem)
+  height: @width
+
+.square, .diamond, .circle, .triangle
+  $color = $color-square
+  position: relative
+  border-width: 2px
+  border-style: solid
+  border-top-color: rgba(0, 0, 0, .005)
+  border-right-color: rgba(0, 0, 0, .2)
+  border-bottom-color: rgba(0, 0, 0, .2)
+  border-left-color: rgba(0, 0, 0, .005)
+  border-radius: 6px
+  background: linear-gradient(160deg, $color + 55%, $color - 12%)
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .05)
+  &::before, &::after
+    box-sizing: border-box
+    content: ''
+    position: absolute
+    top: 50%; left: 50%
+    transform: translate(-50%, -50%)
+  &::before
+    width: 100%; height: 100%
+    clip-path: polygon(0 0, 0 0, 40% 50%, 0 100%, 0 100%, 50% 60%, 100% 100%, 100% 100%, 60% 50%, 100% 0, 100% 0, 50% 40%)
+    background: linear-gradient(135deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .15))
+
+.square, .diamond
+  width: calc(100% - 1.125rem)
+  height: @width
+  &::after
+    width: 55%
+    height: 55%
+    border-width: 1px
+    border-style: solid
+    border-top-color: rgba(0, 0, 0, .075)
+    border-right-color: rgba(0, 0, 0, .25)
+    border-bottom-color: rgba(0, 0, 0, .25)
+    border-left-color: rgba(0, 0, 0, .075)
+    border-radius: 4px
+    box-shadow: -2px -2px 8px rgba(255, 255, 255, .3), 2px 2px 8px rgba(0, 0, 0, .025), inset -4px -4px 8px 2px 2px 8px rgba(0, 0, 0, .1)
+    background: inherit
+
+.diamond
+  $color = $color-diamond
+  width: calc(100% - 1.25rem)
+  height: @width
+  background: linear-gradient(160deg, $color + 55%, $color)
+  transform: rotate(45deg)
+
+.circle
+  $color = $color-circle
+  border-radius: 50%
+  background: linear-gradient(150deg, $color + 55%, $color)
+  &::before
+    width: 85%; height: 85%
+  &::after
+    border: 1px solid rgba(0, 0, 0, .15)
+    border-radius: 50%
+    content: ''
+    width: 65%; height: 65%
+    background: linear-gradient(150deg, $color + 75%, $color)
+
+.triangle
+  $color = $color-triangle
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%)
+  background: linear-gradient(150deg, $color + 35%, $color)
+  &::before
+    width: 85%; height: 85%
+    clip-path: polygon(30% 50%, 0 100%, 0 100%, 50% 70%, 100% 100%, 100% 100%, 70% 50%, 50% 0)
+  &::after
+    border: 1px solid rgba(0, 0, 0, .15)
+    content: ''
+    width: 55%; height: 55%
+    background: linear-gradient(150deg, $color + 65%, $color + 10%)
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%)
