@@ -1,83 +1,109 @@
 $color-square = #f3372a
 $color-diamond = #f5d10c
-$color-circle = #efeaeb
-$color-triangle = #44d82c
-$color-hexagon = #2a5bf3
+$color-circle = #dfdcd5
+$color-triangle = #d335ef
+$color-hexagon = #44d82c
+$color-heptagon = #2a5bf3
 
-.jewel
-  box-sizing: border-box
-  width: calc(100% - 1rem)
-  height: @width
-
-.square, .diamond, .circle, .triangle
-  $color = $color-square
+jewel-piece
   position: relative
-  border-width: 2px
-  border-style: solid
-  border-top-color: rgba(0, 0, 0, .005)
-  border-right-color: rgba(0, 0, 0, .2)
-  border-bottom-color: rgba(0, 0, 0, .2)
-  border-left-color: rgba(0, 0, 0, .005)
-  border-radius: 6px
-  background: linear-gradient(160deg, $color + 55%, $color - 12%)
-  box-shadow: 0 3px 6px rgba(0, 0, 0, .05)
-  &::before, &::after
-    box-sizing: border-box
-    content: ''
-    position: absolute
-    top: 50%; left: 50%
-    transform: translate(-50%, -50%)
-  &::before
-    width: 100%; height: 100%
-    clip-path: polygon(0 0, 0 0, 40% 50%, 0 100%, 0 100%, 50% 60%, 100% 100%, 100% 100%, 60% 50%, 100% 0, 100% 0, 50% 40%)
-    background: linear-gradient(135deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .15))
+  z-index: 1
+  box-sizing: border-box
+  transition: transform .25s ease
+  filter: drop-shadow(1px 2px 3px rgba(50, 50, 0, .25))
+  display: flex
+  .border, .shape
+    flex: 1
+    display: flex
+  .shape
+    margin: 2px
+    display: flex
+    &::after
+      content: ''
+      flex: 1
+      margin: 20%
+  // TODO: Remove matchable hint before production build
+  &[matchable]
+    filter: drop-shadow(1px 2px 5px red)
 
-.square, .diamond
-  width: calc(100% - 1.125rem)
-  height: @width
-  &::after
-    width: 55%
-    height: 55%
-    border-width: 1px
-    border-style: solid
-    border-top-color: rgba(0, 0, 0, .075)
-    border-right-color: rgba(0, 0, 0, .25)
-    border-bottom-color: rgba(0, 0, 0, .25)
-    border-left-color: rgba(0, 0, 0, .075)
-    border-radius: 4px
-    box-shadow: -2px -2px 8px rgba(255, 255, 255, .3), 2px 2px 8px rgba(0, 0, 0, .025), inset -4px -4px 8px 2px 2px 8px rgba(0, 0, 0, .1)
-    background: inherit
+jewel-piece
+  &[type='square']
+    $color = $color-square
+    $colors = (($color + 50%) ($color + 25%) ($color - 25%) ($color - 50%))
+    .border, .shape, .shape::after
+      border-radius: 10%
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+      margin: 1px
+    .shape
+      background: radial-gradient($colors[1], $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
 
-.diamond
-  $color = $color-diamond
-  width: calc(100% - 1.25rem)
-  height: @width
-  background: linear-gradient(160deg, $color + 55%, $color)
-  transform: rotate(45deg)
+  &[type='diamond']
+    $color = $color-diamond
+    $colors = (($color + 60%) ($color + 40%) ($color - 15%) ($color - 30%))
+    width: calc(100% + 4px)
+    height: @width
+    margin: -2px 0 0 -2px
+    .border, .shape, .shape::after
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+    .shape
+      background: radial-gradient($colors[1], $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
 
-.circle
-  $color = $color-circle
-  border-radius: 50%
-  background: linear-gradient(150deg, $color + 55%, $color)
-  &::before
-    width: 85%; height: 85%
-  &::after
-    border: 1px solid rgba(0, 0, 0, .15)
-    border-radius: 50%
-    content: ''
-    width: 65%; height: 65%
-    background: linear-gradient(150deg, $color + 75%, $color)
+  &[type='circle']
+    $color = $color-circle
+    $colors = (($color + 75%) ($color + 35%) ($color - 10%) ($color - 40%))
+    .border, .shape, .shape::after
+      border-radius: 50%
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+      margin: 1px
+    .shape
+      background: radial-gradient($colors[1], $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
+      margin: 14%
 
-.triangle
-  $color = $color-triangle
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%)
-  background: linear-gradient(150deg, $color + 35%, $color)
-  &::before
-    width: 85%; height: 85%
-    clip-path: polygon(30% 50%, 0 100%, 0 100%, 50% 70%, 100% 100%, 100% 100%, 70% 50%, 50% 0)
-  &::after
-    border: 1px solid rgba(0, 0, 0, .15)
-    content: ''
-    width: 55%; height: 55%
-    background: linear-gradient(150deg, $color + 65%, $color + 10%)
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%)
+  &[type='triangle']
+    $color = $color-triangle
+    $colors = (($color + 90%) ($color + 40%) ($color - 20%) ($color - 40%))
+    .border, .shape, .shape::after
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%)
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+    .shape
+      background: radial-gradient($colors[1], $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
+      margin: 20% 15% 10%
+
+  &[type='hexagon']
+    $color = $color-hexagon
+    $colors = (($color + 90%) ($color + 40%) ($color - 20%) ($color - 40%))
+    .border, .shape, .shape::after
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+    .shape
+      background: radial-gradient($colors[1], $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
+      margin: 15%
+
+  &[type='heptagon']
+    $color = $color-heptagon
+    $colors = (($color + 80%) ($color + 45%) ($color - 12%) ($color - 40%))
+    .border, .shape, .shape::after
+      clip-path: polygon(30% 0, 0 20%, 0 55%, 50% 100%, 100% 55%, 100% 20%, 70% 0)
+    .border
+      background: linear-gradient(130deg, $colors[0], $colors[3])
+    .shape
+      background: radial-gradient(65% 50% at 50% 40%, $color 50%, $colors[2])
+    .shape::after
+      background: linear-gradient(130deg, $colors[1], $color)
+      margin: 15%
