@@ -10,6 +10,10 @@
   ],
   "author": "Erick Eduardo Petrucelli <erick.petrucelli@fatectq.edu.br>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ErickPetru/js13k-jewelsback.git"
+  },
   "scripts": {
     "dev": "parcel src/index.pug -p 8080",
     "build:clear": "node ./build/clear.js",
@@ -21,6 +25,8 @@
     "finish": "npm run build && npm run build:check"
   },
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
     "archiver": "^3.1.1",
     "chalk": "^2.4.2",
     "html-inline": "^1.2.0",
@@ -28,6 +34,7 @@
     "parcel": "^1.12.3",
     "pug": "^2.0.4",
     "rimraf": "^3.0.0",
+    "serialize-to-js": "^3.0.0",
     "stylus": "^0.54.5"
   }
 }
