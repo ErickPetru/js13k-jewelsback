@@ -1,31 +1,46 @@
-#board
+game-board
   display: grid
+  overflow: hidden
   box-sizing: border-box
-  width: calc(100vmin - 2rem)
-  height: calc(100vmin - 2rem)
+  width: calc(100vmin - 30px)
+  height: calc(100vmin - 30px)
+  border: 3px solid #3333
+  border-radius: 5px
+  cursor: pointer
+  &[grabbing]
+    cursor: grabbing !important
 
-.row
+board-slot
+  position: relative
   display: grid
-  &:first-child .column
-    border-top: 1px solid #2222
-    &:first-child
-      border-radius: 6px 0 0 0
-    &:last-child
-      border-radius: 0 6px 0 0
-  &:last-child .column
-    border-bottom: 1px solid #2222
-    &:first-child
-      border-radius: 0 0 0 6px
-    &:last-child
-      border-radius: 0 0 6px 0
-
-.column
-  display: flex
-  justify-content: center
-  align-items: center
+  padding: 8px
   box-sizing: border-box
-  background: #2221
-  &:first-child
-    border-left: 1px solid #2222
-  &:last-child
-    border-right: 1px solid #2222
+  outline: 5px solid #3690
+  transition: all .5s ease
+  &:nth-child(even)
+    background: #22222222
+  &:nth-child(odd)
+    background: #00000022
+  &[locked]
+    border: 3px solid #3333
+    background: transparent
+    cursor: default
+  &[selected]
+    outline-color: #3695
+    outline-offset: -7px
+    background: #3695
+    cursor: grabbing
+    animation: outline .3s ease-in infinite alternate forwards
+    jewel-piece
+      z-index: 2
+  // TODO: Remove targetable hint before production build
+  &[targetable]
+    background: #c805
+
+@keyframes outline
+  0%
+    outline-color: #3695
+    outline-offset: -5px
+  100%
+    outline-color: #3697
+    outline-offset: -7px
