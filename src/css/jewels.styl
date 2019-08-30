@@ -1,16 +1,19 @@
-$color-square = #f3372a
-$color-diamond = #f5d10c
-$color-circle = #dfdcd5
-$color-triangle = #d335ef
-$color-hexagon = #44d82c
-$color-heptagon = #2a5bf3
+$color-square = #f44336
+$color-diamond = #ffc107
+$color-circle = #ff5722
+$color-triangle = #e040fb
+$color-hexagon = #8bc34a
+$color-heptagon = #2196f3
+$color-rainbow = #dfdcd5
+$color-nebula = #455a64
+
+$ease-in-elastic = cubic-bezier(.6, .25, .55, 1.15)
 
 jewel-piece
   position: relative
   z-index: 1
   box-sizing: border-box
-  transition: transform .25s ease
-  filter: drop-shadow(1px 2px 3px rgba(50, 50, 0, .25))
+  transition: opacity .25s ease, filter .25s ease, transform .25s ease
   display: flex
   .border, .shape
     flex: 1
@@ -21,24 +24,33 @@ jewel-piece
     &::after
       content: ''
       flex: 1
-      margin: 20%
-  // TODO: Remove matchable hint before production build
-  &[matchable]
+      margin: 16%
+  &.arriving
+    transition: opacity .1s $ease-in-elastic, transform .1s $ease-in-elastic
+  &.exploding
+    animation: exploding .25s ease-out forwards
+
+.dev jewel-piece[matchable]
     filter: drop-shadow(1px 2px 5px red)
 
-jewel-piece
+conic-background($c, $deg = 45deg)
+  $arr = ($c + 20%), $c, ($c - 10%), ($c + 15%), $c, ($c - 15%), ($c + 15%), $c, ($c - 15%), ($c + 10%), $c, ($c - 15%), ($c + 20%)
+  background: radial-gradient(($c + 45%), ($c - 25%))
+  background: conic-gradient(from $deg, $arr)
+
+jewel-piece:not([promoted='rainbow']):not([promoted='nebula'])
   &[type='square']
     $color = $color-square
     $colors = (($color + 50%) ($color + 25%) ($color - 25%) ($color - 50%))
     .border, .shape, .shape::after
       border-radius: 10%
     .border
-      background: linear-gradient(130deg, $colors[0], $colors[3])
+      background: linear-gradient(130deg, $color + 40%, $color - 50%)
       margin: 1px
     .shape
-      background: radial-gradient($colors[1], $colors[2])
+      conic-background($color)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
+      background: linear-gradient(130deg, alpha($color + 60%, 40%), alpha($color + 40%, 25%))
 
   &[type='diamond']
     $color = $color-diamond
@@ -51,9 +63,9 @@ jewel-piece
     .border
       background: linear-gradient(130deg, $colors[0], $colors[3])
     .shape
-      background: radial-gradient($colors[1], $colors[2])
+      conic-background($color, 30deg)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
+      background: linear-gradient(130deg, alpha($color + 60%, 50%), alpha($color + 40%, 75%))
 
   &[type='circle']
     $color = $color-circle
@@ -64,10 +76,9 @@ jewel-piece
       background: linear-gradient(130deg, $colors[0], $colors[3])
       margin: 1px
     .shape
-      background: radial-gradient($colors[1], $colors[2])
+      conic-background($color)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
-      margin: 14%
+      background: linear-gradient(130deg, alpha($color + 60%, 50%), alpha($color + 40%, 75%))
 
   &[type='triangle']
     $color = $color-triangle
@@ -77,10 +88,10 @@ jewel-piece
     .border
       background: linear-gradient(130deg, $colors[0], $colors[3])
     .shape
-      background: radial-gradient($colors[1], $colors[2])
+      conic-background($color, 120deg)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
-      margin: 20% 15% 10%
+      background: linear-gradient(130deg, alpha($color + 60%, 50%), alpha($color + 40%, 90%))
+      margin: 22% 16% 11%
 
   &[type='hexagon']
     $color = $color-hexagon
@@ -90,10 +101,9 @@ jewel-piece
     .border
       background: linear-gradient(130deg, $colors[0], $colors[3])
     .shape
-      background: radial-gradient($colors[1], $colors[2])
+      conic-background($color)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
-      margin: 15%
+      background: linear-gradient(130deg, alpha($color + 60%, 40%), alpha($color + 40%, 55%))
 
   &[type='heptagon']
     $color = $color-heptagon
@@ -103,7 +113,128 @@ jewel-piece
     .border
       background: linear-gradient(130deg, $colors[0], $colors[3])
     .shape
-      background: radial-gradient(65% 50% at 50% 40%, $color 50%, $colors[2])
+      conic-background($color)
     .shape::after
-      background: linear-gradient(130deg, $colors[1], $color)
-      margin: 15%
+      background: linear-gradient(130deg, alpha($color + 60%, 40%), alpha($color + 40%, 55%))
+
+jewel-piece[promoted]
+  animation: brightening 1s .5s ease infinite alternate both
+  &::before, &::after
+    position: absolute
+    left: 50%
+    z-index: 2
+    width: 175%
+    height: @width
+    background-position: center
+    background-size: 100% 100%
+    content: ''
+    transform: translateX(-50%)
+    pointer-events: none
+  &::before
+    z-index: -1
+
+jewel-piece[promoted='smoke']
+  &::before, &::after
+    background-image: url('../img/smoke.webp')
+  &::before
+    width: 180%
+    height: @width
+    top: -35%
+    filter: brightness(1.3) contrast(1.5)
+  &::after
+    width: 125%
+    height: @width
+    top: -12%
+    filter: brightness(5) contrast(1.2) opacity(.5)
+
+jewel-piece[promoted='fire']
+  &::before
+    background-image: url('../img/smoke.webp')
+    width: 160%
+    height: @width
+    top: -25%
+    filter: brightness(1.2) contrast(1.5) opacity(.5)
+  &::after
+    width: 215%
+    bottom: 9px
+    left: 52%
+    filter: saturate(2) brightness(1.2) contrast(1.25) opacity(1)
+    background-image: url('../img/fire.webp')
+
+jewel-piece[promoted='star']
+  &::before
+    background-image: url('../img/smoke.webp')
+    width: 160%
+    height: @width
+    top: -25%
+    filter: brightness(1.5) contrast(1.5) opacity(.5)
+  &::after
+    animation: blinking-star .85s .5s ease infinite alternate both
+    width: 120%
+    height: @width
+    top: -10%
+    clip-path: polygon(50% 0%, 61% 35%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 35%)
+    background-image: radial-gradient(circle, #fffb, #fff2)
+    mix-blend-mode: lighten
+
+jewel-piece[promoted='rainbow']
+  $color = $color-rainbow
+  $colors = (($color + 50%) ($color - 50%))
+  .border, .shape, .shape::after
+    border-radius: 10%
+    clip-path: none
+  .border
+    background: linear-gradient(130deg, $colors[0], $colors[1])
+    margin: 1px
+  .shape
+    background: linear-gradient(to right, $color-square, $color-circle, $color-diamond, $color-hexagon, $color-heptagon, $color-triangle, $color-square)
+  .shape::after
+    background: linear-gradient(130deg, alpha($color, 30%), alpha($color, 50%))
+    z-index: 1
+
+jewel-piece[promoted='nebula']
+  $color = $color-nebula
+  $colors = (($color + 65%) ($color + 5%) ($color - 25%))
+  margin: -3px
+  .border, .shape
+    border-radius: 50%
+    clip-path: none
+  .border
+    background: linear-gradient(130deg, $colors[0], $colors[1])
+    margin: 1px
+  .shape
+    background: linear-gradient(130deg, $color, $colors[2])
+  .shape::after
+    display: none
+  &::before, &::after
+    background-image: url('../img/smoke.webp')
+  &::before
+    width: 160%
+    height: @width
+    top: -25%
+    filter: brightness(1.2) contrast(1.5) opacity(.5)
+  &::after
+    top: -39%
+    filter: brightness(0) contrast(2)
+
+@keyframes exploding
+  0%
+    opacity: 1
+    transform: scale(1) translateY(0)
+  100%
+    opacity: 0
+    transform: scale(0) translateY(5%)
+
+@keyframes brightening
+  0%
+    filter: brightness(1)
+  100%
+    filter: brightness(1.1)
+
+@keyframes blinking-star
+  0%
+    transform: translateX(-50%)
+    filter: brightness(1) drop-shadow(0 0 .5px #fffa)
+  100%
+    transform: translateX(-50%) scale(.8)
+    filter: brightness(1.075) drop-shadow(0 0 1px #fffa)
