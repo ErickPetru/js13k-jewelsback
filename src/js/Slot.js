@@ -56,6 +56,10 @@ export default class Slot extends HTMLElement {
     this.setAttribute('y', value)
   }
 
+  get game () {
+    return this.board.game
+  }
+
   get board () {
     return this.parentElement
   }
@@ -65,15 +69,17 @@ export default class Slot extends HTMLElement {
   }
 
   set jewel (value) {
-    value.classList.add('transitions-off')
+    this.game.enableTransitions(value, false)
     value.x = this.x
     value.y = this.y
-    value.style.transform = null
+    this.game.setStyles(value, { transform: null })
     this.appendChild(value)
-    value.classList.remove('transitions-off')
+    this.game.enableTransitions(value)
   }
 
   mousedown () {
+    // TODO: Does nothing if any animation is playing.
+
     if (this.locked) return this.board.unselectAll()
     if (this.board.findJewelSelected() === null) {
       this.board.unselectAll()
@@ -85,6 +91,8 @@ export default class Slot extends HTMLElement {
   }
 
   mouseup () {
+    // TODO: Does nothing if any animation is playing.
+
     this.board.grabbing = false
     if (this.locked) return this.board.unselectAll()
     if (this.targetable) return this.board.flipJewels(this.jewel)

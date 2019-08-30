@@ -39,33 +39,37 @@ export default class MoveChecker {
     return moves
   }
 
-  getMatchableMove (current, destination, reverse, ...jewels) {
-    if (current.type === destination.type) return null
-    for (let j of jewels) if (!j || current.type !== j.type) return null
-    return reverse ? current.slot : destination.slot
+  checkMatchable (selected, target, reverse, ...neighbours) {
+    if (selected.type === target.type) return null
+
+    for (let jewel of neighbours) {
+      if (!jewel || selected.type !== jewel.type) return null
+    }
+
+    return reverse ? selected : target
   }
 
   findPossibleMovesTop (jewel, reverse = false) {
     let moves = []
     const { x, y } = jewel,
-      destination = this.board.findJewelByPosition(x, y - 1) // 🌀
-    if (!destination || destination.locked) return []
+      target = this.board.findJewelByPosition(x, y - 1) // 🌀
+    if (!target || target.locked) return []
 
     /* 🌀💎💎
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y - 1),
       this.board.findJewelByPosition(x + 2, y - 1)))
 
     /* 💎💎🌀
      *      💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x - 2, y - 1)))
 
     /* 💎🌀💎
      *   💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x + 1, y - 1)))
 
@@ -73,14 +77,14 @@ export default class MoveChecker {
      * 💎
      * 🌀
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x, y - 2),
       this.board.findJewelByPosition(x, y - 3)))
 
     /* 💎💎
      * 💎🌀
      *   💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x - 1, y - 2),
       this.board.findJewelByPosition(x, y - 2)))
@@ -88,7 +92,7 @@ export default class MoveChecker {
     /* 💎💎
      * 🌀💎
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y - 1),
       this.board.findJewelByPosition(x + 1, y - 2),
       this.board.findJewelByPosition(x, y - 2)))
@@ -101,45 +105,45 @@ export default class MoveChecker {
   findPossibleMovesRight (jewel, reverse = false) {
     let moves = []
     const { x, y } = jewel,
-      destination = this.board.findJewelByPosition(x + 1, y) // 🌀
-    if (!destination || destination.locked) return []
+      target = this.board.findJewelByPosition(x + 1, y) // 🌀
+    if (!target || target.locked) return []
 
     /* 💎🌀💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 2, y),
       this.board.findJewelByPosition(x + 3, y)))
 
     /* 💎🌀
      *   💎
      *   💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y + 1),
       this.board.findJewelByPosition(x + 1, y + 2)))
 
     /*   💎
      *   💎
      * 💎🌀 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y - 1),
       this.board.findJewelByPosition(x + 1, y - 2)))
 
     /*   💎
      * 💎🌀
      *   💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y - 1),
       this.board.findJewelByPosition(x + 1, y + 1)))
 
     /*   💎💎
      * 💎🌀💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 2, y),
       this.board.findJewelByPosition(x + 1, y - 1),
       this.board.findJewelByPosition(x + 2, y - 1)))
 
     /* 💎🌀💎
      *   💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 2, y),
       this.board.findJewelByPosition(x + 1, y + 1),
       this.board.findJewelByPosition(x + 2, y + 1)))
@@ -152,24 +156,24 @@ export default class MoveChecker {
   findPossibleMovesBottom (jewel, reverse = false) {
     let moves = []
     const { x, y } = jewel,
-      destination = this.board.findJewelByPosition(x, y + 1) // 🌀
-    if (!destination || destination.locked) return []
+      target = this.board.findJewelByPosition(x, y + 1) // 🌀
+    if (!target || target.locked) return []
 
     /* 💎
      * 🌀💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y + 1),
       this.board.findJewelByPosition(x + 2, y + 1)))
 
     /*      💎
      * 💎💎🌀 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x - 2, y + 1)))
 
     /*   💎
      * 💎🌀💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x + 1, y + 1)))
 
@@ -177,14 +181,14 @@ export default class MoveChecker {
      * 🌀
      * 💎
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x, y + 2),
       this.board.findJewelByPosition(x, y + 3)))
 
     /*   💎
      * 💎🌀
      * 💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x - 1, y + 2),
       this.board.findJewelByPosition(x, y + 2)))
@@ -192,7 +196,7 @@ export default class MoveChecker {
     /* 💎
      * 🌀💎
      * 💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x + 1, y + 1),
       this.board.findJewelByPosition(x + 1, y + 2),
       this.board.findJewelByPosition(x, y + 2)))
@@ -205,45 +209,45 @@ export default class MoveChecker {
   findPossibleMovesLeft (jewel, reverse = false) {
     let moves = []
     const { x, y } = jewel,
-      destination = this.board.findJewelByPosition(x - 1, y) // 🌀
-    if (!destination || destination.locked) return []
+      target = this.board.findJewelByPosition(x - 1, y) // 🌀
+    if (!target || target.locked) return []
 
     /* 💎💎🌀💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 2, y),
       this.board.findJewelByPosition(x - 3, y)))
 
     /* 🌀💎
      * 💎
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x - 1, y + 2)))
 
     /* 💎
      * 💎
      * 🌀💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x - 1, y - 2)))
 
     /* 💎
      * 🌀💎
      * 💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x - 1, y + 1)))
 
     /* 💎💎
      * 💎🌀💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 2, y),
       this.board.findJewelByPosition(x - 1, y - 1),
       this.board.findJewelByPosition(x - 2, y - 1)))
 
     /* 💎🌀💎
      * 💎💎 */
-    moves.push(this.getMatchableMove(jewel, destination, reverse,
+    moves.push(this.checkMatchable(jewel, target, reverse,
       this.board.findJewelByPosition(x - 2, y),
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x - 2, y + 1)))
