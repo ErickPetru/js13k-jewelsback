@@ -4,40 +4,46 @@ game-board
   box-sizing: border-box
   width: calc(100vmin - 30px)
   height: calc(100vmin - 30px)
-  border: 3px solid #3333
+  border: 3px solid #3339
   border-radius: 5px
   cursor: pointer
+  transition: all 1s cubic-bezier(0.645, 0.045, 0.355, 1)
   &[grabbing]
     cursor: grabbing !important
+
+.dev game-board
+  transition: all .1s cubic-bezier(0.645, 0.045, 0.355, 1)
 
 board-slot
   position: relative
   display: grid
-  padding: 8px
+  padding: 10px
   box-sizing: border-box
   outline: 5px solid #3690
   transition: all .5s ease
+  &:empty
+    cursor: default
   &:nth-child(even)
-    background: #22222222
+    background: #11111177
   &:nth-child(odd)
-    background: #00000022
+    background: #00000077
   &[locked]
     border: 3px solid #3333
     background: transparent
     cursor: default
   &[selected]
-    outline-color: #3695
+    outline-color: #3699
     outline-offset: -7px
-    background: #3695
+    background: #11336699
     cursor: grabbing
-    animation: outline .3s ease-in infinite alternate forwards
+    animation: selected .3s ease-in infinite alternate forwards
     jewel-piece
       z-index: 2
-  // TODO: Remove targetable hint before production build
-  &[targetable]
-    background: #c805
 
-@keyframes outline
+.dev board-slot[targetable]
+  background: #c805
+
+@keyframes selected
   0%
     outline-color: #3695
     outline-offset: -5px
