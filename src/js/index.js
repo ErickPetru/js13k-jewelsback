@@ -2,7 +2,7 @@
 import Board from './Board'
 
 new (class Game {
-  GAME_ENV = 'dev' // || 'prod'
+  ENV = 'prod' // || 'dev'
 
   levels = [
     {
@@ -13,7 +13,7 @@ new (class Game {
   ]
 
   constructor () {
-    if (document) document.documentElement.classList.add(this.GAME_ENV)
+    if (document) document.documentElement.classList.add(this.ENV)
 
     this.board = new Board(this)
     document.querySelector('main').append(this.board)

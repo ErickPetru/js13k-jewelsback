@@ -19,25 +19,13 @@ export default class Jewel extends HTMLElement {
   }
 
   connectedCallback () {
-    if (this.hasClass('arriving')) {
+    if (this.classList.contains('arriving')) {
       const top = -this.offsetHeight - this.board.offsetTop - this.slot.offsetTop
 
-      let duration = null
-      if (this.board.GAME_ENV === 'prod')
-        duration = `${+((this.y + 1) / (this.board.level.size * 1.25) + .1)}s`
-
       this.game.setStyles(this, {
-        opacity: .5, transform: `translateY(${top}px)`,
-        transitionDuration: duration
+        opacity: .5, transform: `translateY(${top}px)`
       })
     }
-  }
-
-  async arrive () {
-    await this.game.setStylesWithTransition(this, {
-      opacity: null, transform: null, transitionDuration: null
-    })
-    this.classList.remove('arriving')
   }
 
   static types = {
@@ -111,6 +99,10 @@ export default class Jewel extends HTMLElement {
     return this.parentElement
   }
 
+  get above () {
+    return this.parentElement
+  }
+
   get canBePromoted () {
     return this.matchable && !this.promoted
   }
@@ -121,6 +113,20 @@ export default class Jewel extends HTMLElement {
     const rnd = Math.floor(Math.random() * chance)
     if (rnd < specials.length) return specials[rnd]
     else return null
+  }
+
+  async arrive () {
+    const time = `${((this.y + 1) / (this.board.level.size * 2)).toFixed(2)}s`
+
+    await this.game.setStylesWithTransition(this, {
+      opacity: null, transform: null, transitionDuration: time
+    })
+
+    await this.game.setStyles(this, {
+      transitionDuration: null
+    })
+
+    this.classList.remove('arriving')
   }
 }
 

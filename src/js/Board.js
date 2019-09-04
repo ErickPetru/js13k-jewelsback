@@ -28,21 +28,54 @@ export default class Board extends HTMLElement {
   }
 
   set grabbing (value) {
-    value ? this.setAttribute('grabbing', '') : this.removeAttribute('grabbing')
+    const attr = 'grabbing'
+    value ? this.setAttribute(attr, '') : this.removeAttribute(attr)
+  }
+
+  get animating () {
+    return this.getAttribute('animating') === '' ? true : false
+  }
+
+  set animating (value) {
+    const attr = 'animating'
+    value ? this.setAttribute(attr, '') : this.removeAttribute(attr)
   }
 
   get jewels () {
-    return this.slots.filter(s => !s.locked).map(s => s.firstChild)
+    return this.occupiedSlots.map(s => s.firstChild)
+  }
+
+  get unlockedSlots () {
+    return this.slots.filter(s => !s.locked)
   }
 
   get occupiedSlots () {
-    return this.slots.filter(s => !s.locked)
+    return this.unlockedSlots.filter(s => s.jewel)
+  }
+
+  get emptySlots () {
+    return this.unlockedSlots.filter(s =>
+      !s.jewel || s.jewel.classList.contains('moving'))
+  }
+
+  get emptySlotsGroupedByRow () {
+    const empties = this.emptySlots.sort((a, b) => b.y - a.y || a.x - b.x)
+
+    const groups = new Map()
+    empties.forEach(slot => {
+      const group = groups.get(slot.y)
+      if (group) group.push(slot)
+      else groups.set(slot.y, [slot])
+    })
+
+    return groups
   }
 
   async startLevel (level) {
     this.slots = []
     this.level = level
 
+    this.animating = true
     this.game.setStyles(this, {
       opacity: 0, transform: 'scale(.75)',
       gridTemplateColumns: `repeat(${level.size}, 1fr)`,
@@ -62,33 +95,16 @@ export default class Board extends HTMLElement {
       opacity: 1, transform: 'scale(1)'
     })
 
-    this.fillEmptySlots()
+    await this.fillEmptySlots()
+    this.animating = false
   }
 
   async fillEmptySlots () {
-    function groupBy(list, keyGetter) {
-      const map = new Map()
-      list.forEach((item) => {
-        const key = keyGetter(item)
-        const collection = map.get(key)
-        if (!collection) {
-          map.set(key, [item])
-        } else {
-          collection.push(item)
-        }
-      })
-
-      return map
-    }
-
-    let empties = this.slots.filter(s => !s.locked && !s.jewel)
-    empties = empties.sort((a, b) => b.y - a.y || a.x - b.x)
-    let rows = groupBy(empties, slot => slot.y)
-
+    const rows = this.emptySlotsGroupedByRow
     const spec = this.level.specials
 
-    for (let row of rows) {
-      for (let slot of row[1]) {
+    for (let row of rows.keys()) {
+      for (let slot of rows.get(row)) {
         const shape = this.matchChecker.generateUnmatchableShape(slot.x, slot.y)
         const jewel = new Jewel(slot.x, slot.y, shape)
         slot.append(jewel)
@@ -114,12 +130,18 @@ export default class Board extends HTMLElement {
       }
 
       // TODO: Use CSS variables to better configure timing
-      await this.game.delay(this.GAME_ENV === 'prod' ? 300 : 1)
+      await this.game.delay(this.game.ENV === 'prod' ? 150 : 1)
     }
   }
 
   findSlotByPosition(x, y) {
     return this.querySelector(`board-slot[x="${x}"][y="${y}"]`)
+  }
+
+  findUnlockedSlotBelow(jewel) {
+    return this.unlockedSlots
+      .filter(slot => slot.x === jewel.x && slot.y > jewel.y)
+      .sort((a, b) => a.y - b.y).shift()
   }
 
   findJewelByPosition(x, y) {
@@ -135,7 +157,7 @@ export default class Board extends HTMLElement {
   }
 
   unselectAll () {
-    for (let slot of this.occupiedSlots) {
+    for (let slot of this.unlockedSlots) {
       slot.targetable = false
       slot.selected = false
     }
@@ -146,79 +168,123 @@ export default class Board extends HTMLElement {
     for (let jewel of jewels) jewel.slot.targetable = true
   }
 
-  async flipJewels (target) {
-    const selected = this.findJewelSelected()
+  async flipJewels (current, destination) {
+    if (!current || !destination) return
 
-    if (target.x > selected.x) {
-      this.game.setStylesWithTransition(target, {
-        transform: `translateX(${-target.slot.offsetWidth}px)`
-      })
-
-      await this.game.setStylesWithTransition(selected, {
-        transform: `translateX(${selected.slot.offsetWidth}px)`
-      })
-    } else if (target.x < selected.x) {
-      this.game.setStylesWithTransition(target, {
-        transform: `translateX(${target.slot.offsetWidth}px)`
+    this.animating = true
+    if (current.x > destination.x) {
+      this.game.setStylesWithTransition(current, {
+        transform: `translateX(${-current.slot.offsetWidth}px)`
       })
 
-      await this.game.setStylesWithTransition(selected, {
-        transform: `translateX(${-selected.slot.offsetWidth}px)`
+      await this.game.setStylesWithTransition(destination, {
+        transform: `translateX(${destination.slot.offsetWidth}px)`
       })
-    } else if (target.y > selected.y) {
-      this.game.setStylesWithTransition(target, {
-        transform: `translateY(${-target.slot.offsetHeight}px)`
+    } else if (current.x < destination.x) {
+      this.game.setStylesWithTransition(current, {
+        transform: `translateX(${current.slot.offsetWidth}px)`
       })
 
-      await this.game.setStylesWithTransition(selected, {
-        transform: `translateY(${selected.slot.offsetHeight}px)`
+      await this.game.setStylesWithTransition(destination, {
+        transform: `translateX(${-destination.slot.offsetWidth}px)`
+      })
+    } else if (current.y > destination.y) {
+      this.game.setStylesWithTransition(current, {
+        transform: `translateY(${-current.slot.offsetHeight}px)`
+      })
+
+      await this.game.setStylesWithTransition(destination, {
+        transform: `translateY(${destination.slot.offsetHeight}px)`
       })
     } else {
-      this.game.setStylesWithTransition(target, {
-        transform: `translateY(${target.slot.offsetHeight}px)`
+      this.game.setStylesWithTransition(current, {
+        transform: `translateY(${current.slot.offsetHeight}px)`
       })
 
-      await this.game.setStylesWithTransition(selected, {
-        transform: `translateY(${-selected.slot.offsetHeight}px)`
+      await this.game.setStylesWithTransition(destination, {
+        transform: `translateY(${-destination.slot.offsetHeight}px)`
       })
     }
 
-    const selectedSlot = this.findSlotByPosition(selected.x, selected.y)
-    const targetSlot = this.findSlotByPosition(target.x, target.y)
-
-    selectedSlot.jewel = target
-    targetSlot.jewel = selected
+    const slot1 = this.findSlotByPosition(destination.x, destination.y)
+    const slot2 = this.findSlotByPosition(current.x, current.y)
+    slot1.jewel = current
+    slot2.jewel = destination
 
     this.explodeMatches()
     this.unselectAll()
   }
 
-  explodeMatches () {
+  async explodeMatches () {
     const jewels = []
     for (let y = this.level.size - 1; y > -1; y--) {
       for (let x = 0; x < this.level.size; x++) {
         const jewel = this.findJewelByPosition(x, y)
         if (!jewel) continue
         jewels.push(...this.matchChecker.findPossibleMatches(jewel))
+        // TODO: Create special jewels caused by deep explosions.
       }
     }
 
+    if (jewels.length === 0) return
+
+    this.animating = true
     const normalJewels = jewels.filter(jewel => !jewel.promoted)
-    for (let jewel of normalJewels)
+    for (let jewel of normalJewels) {
+      jewel.slot.classList.add('exploding')
       jewel.classList.add('exploding')
+    }
 
     // TODO: Improved explosions for special jewels.
     // TODO: Increase score/level up.
 
-    setTimeout((board, normalJewels) => {
-      normalJewels.forEach(jewel => jewel.remove())
-      board.moveRows()
-    }, 300, this, normalJewels)
+    await this.game.delay(100)
+    normalJewels.forEach(jewel => jewel.remove())
+    await this.moveRows()
+    await this.fillEmptySlots()
+    await this.explodeMatches()
+    this.animating = false
   }
 
-  moveRows () {
-    // TODO: Move down the jewels of the same row.
-    // TODO: Get new jewels and move then down.
+  async moveRows () {
+    const alreadyChecked = []
+    for (let y = this.level.size - 1; y > -1; y--) {
+      const row = this.emptySlots.filter(slot => slot.y === y)
+      for (let empty of row) {
+        const previous = this.occupiedSlots
+          .filter(slot => alreadyChecked.indexOf(slot) === -1)
+          .filter(slot => slot.x === empty.x && slot.y < empty.y)
+          .sort((a, b) => b.y - a.y).shift()
+
+        alreadyChecked.push(previous)
+        if (!previous || !previous.jewel) continue
+
+        empty.classList.remove('exploding')
+        previous.jewel.classList.add('moving')
+        previous.jewel.future = empty
+
+        const difference = empty.y - previous.y
+        this.game.setStylesWithTransition(previous.jewel, {
+          transform: `translateY(${previous.offsetHeight * difference}px)`
+        })
+      }
+
+      await this.game.delay(125)
+    }
+
+    const moving = this.jewels
+      .filter(j => j.classList.contains('moving'))
+      .sort((a, b) => b.y - a.y)
+
+    for (let jewel of moving) {
+      const destination = jewel.future
+      jewel.classList.remove('moving')
+      this.game.setStyles(jewel, { transform: null })
+      destination.append(jewel)
+      jewel.x = destination.x
+      jewel.y = destination.y
+      delete jewel.future
+    }
   }
 }
 

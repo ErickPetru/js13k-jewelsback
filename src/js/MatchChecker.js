@@ -10,11 +10,11 @@ export default class MatchChecker {
     const shape = shapes[Math.random() * shapes.length << 0]
 
     const previous = this.board.findJewelByPosition(x - 1, y)
-    const bellow = this.board.findJewelByPosition(x, y + 1)
-    const beforeBellowPrevious = this.board.findJewelByPosition(x - 1, y + 1)
+    const below = this.board.findJewelByPosition(x, y + 1)
+    const beforeBelowPrevious = this.board.findJewelByPosition(x - 1, y + 1)
 
-    if (previous && bellow && beforeBellowPrevious &&
-        bellow.type === shape && previous.type === shape && beforeBellowPrevious.type === shape)
+    if (previous && below && beforeBelowPrevious &&
+        below.type === shape && previous.type === shape && beforeBelowPrevious.type === shape)
       return this.generateUnmatchableShape(x, y, shape)
 
     const beforePrevious = this.board.findJewelByPosition(x - 2, y)
@@ -22,9 +22,9 @@ export default class MatchChecker {
         previous.type === shape && beforePrevious.type === shape)
       return this.generateUnmatchableShape(x, y, shape)
 
-    const beforeBellow = this.board.findJewelByPosition(x, y + 2)
-    if (bellow && beforeBellow &&
-        bellow.type === shape && beforeBellow.type === shape)
+    const beforeBelow = this.board.findJewelByPosition(x, y + 2)
+    if (below && beforeBelow &&
+        below.type === shape && beforeBelow.type === shape)
       return this.generateUnmatchableShape(x, y, shape)
 
     return shape

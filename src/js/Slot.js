@@ -78,9 +78,10 @@ export default class Slot extends HTMLElement {
   }
 
   mousedown () {
-    // TODO: Does nothing if any animation is playing.
+    if (this.board.animating) return
 
     if (this.locked) return this.board.unselectAll()
+
     if (this.board.findJewelSelected() === null) {
       this.board.unselectAll()
       this.board.updateTargetables(this)
@@ -91,11 +92,16 @@ export default class Slot extends HTMLElement {
   }
 
   mouseup () {
-    // TODO: Does nothing if any animation is playing.
+    if (this.board.animating) return
 
     this.board.grabbing = false
     if (this.locked) return this.board.unselectAll()
-    if (this.targetable) return this.board.flipJewels(this.jewel)
+
+    if (this.targetable) {
+      const selected = this.board.findJewelSelected()
+      return this.board.flipJewels(this.jewel, selected)
+    }
+
     if (!this.lastClick || Date.now() - this.lastClick > 250)
       this.board.unselectAll()
   }
