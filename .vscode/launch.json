@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome with Debugging",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}",
+      "breakOnLoad": true,
+      "preLaunchTask": "npm: dev",
+      "skipFiles": ["node_modules"],
+      "sourceMapPathOverrides": {
+        "../*": "${webRoot}/*"
+      }
+    }
+  ]
+}
