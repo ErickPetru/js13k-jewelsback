@@ -7,7 +7,7 @@ $color-heptagon = #2196f3
 $color-rainbow = #dfdcd5
 $color-nebula = #455a64
 
-$ease-in-elastic = cubic-bezier(.6, .25, .55, 1.15)
+$ease-in-elastic = cubic-bezier(.6, .25, .55, 1)
 
 jewel-piece
   position: relative
@@ -25,10 +25,10 @@ jewel-piece
       content: ''
       flex: 1
       margin: 16%
-  &.arriving
-    transition: opacity .1s $ease-in-elastic, transform .1s $ease-in-elastic
+  &.arriving, &.moving
+    transition: opacity .15s ease-in, transform .15s ease-in
   &.exploding
-    animation: exploding .25s ease-out forwards
+    animation: jewel-exploding .15s ease-out forwards
 
 .dev jewel-piece[matchable]
     filter: drop-shadow(1px 2px 5px red)
@@ -118,7 +118,7 @@ jewel-piece:not([promoted='rainbow']):not([promoted='nebula'])
       background: linear-gradient(130deg, alpha($color + 60%, 40%), alpha($color + 40%, 55%))
 
 jewel-piece[promoted]
-  animation: brightening 1s .5s ease infinite alternate both
+  animation: jewel-brightening 1s .5s ease infinite alternate both
   &::before, &::after
     position: absolute
     left: 50%
@@ -169,7 +169,7 @@ jewel-piece[promoted='star']
     top: -25%
     filter: brightness(1.5) contrast(1.5) opacity(.5)
   &::after
-    animation: blinking-star .85s .5s ease infinite alternate both
+    animation: star-blinking .85s .5s ease infinite alternate both
     width: 120%
     height: @width
     top: -10%
@@ -216,25 +216,3 @@ jewel-piece[promoted='nebula']
   &::after
     top: -39%
     filter: brightness(0) contrast(2)
-
-@keyframes exploding
-  0%
-    opacity: 1
-    transform: scale(1) translateY(0)
-  100%
-    opacity: 0
-    transform: scale(0) translateY(5%)
-
-@keyframes brightening
-  0%
-    filter: brightness(1)
-  100%
-    filter: brightness(1.1)
-
-@keyframes blinking-star
-  0%
-    transform: translateX(-50%)
-    filter: brightness(1) drop-shadow(0 0 .5px #fffa)
-  100%
-    transform: translateX(-50%) scale(.8)
-    filter: brightness(1.075) drop-shadow(0 0 1px #fffa)
