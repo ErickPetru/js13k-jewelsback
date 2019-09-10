@@ -1,31 +1,23 @@
 export default class Jewel extends HTMLElement {
-  constructor (x, y, type) {
+  futureSlot = null
+  futurePromotion = false
+
+  constructor (slot, type) {
     super()
 
     this.type = type
     this.checked = false
-    this.x = x
-    this.y = y
+    this.x = slot.x
+    this.y = slot.y
 
-    this.className = 'arriving transitions-off'
-
+    this.setAttribute('hidden', '')
     const border = document.createElement('div')
+    const shape = document.createElement('div')
     border.className = 'border'
     this.append(border)
-
-    const shape = document.createElement('div')
     shape.className = 'shape'
     border.append(shape)
-  }
-
-  connectedCallback () {
-    if (this.classList.contains('arriving')) {
-      const top = -this.offsetHeight - this.board.offsetTop - this.slot.offsetTop
-
-      this.game.setStyles(this, {
-        opacity: .5, transform: `translateY(${top}px)`
-      })
-    }
+    slot.append(this)
   }
 
   static types = {
@@ -107,26 +99,44 @@ export default class Jewel extends HTMLElement {
     return this.matchable && !this.promoted
   }
 
-  generateRandomPromotion (specials) {
-    const chance = specials.length +
-      this.board.level.size * (this.board.level.size / 2)
-    const rnd = Math.floor(Math.random() * chance)
-    if (rnd < specials.length) return specials[rnd]
-    else return null
+  generateRandomPromotion (specials, jewels) {
+    if (specials) {
+      const promotions = []
+      if (specials.smoke > jewels.filter(j => j.promoted === 'smoke').length)
+        promotions.push('smoke')
+      if (specials.fire > jewels.filter(j => j.promoted === 'fire').length)
+        promotions.push('fire')
+      if (specials.star > jewels.filter(j => j.promoted === 'star').length)
+        promotions.push('star')
+      if (specials.rainbow > jewels.filter(j => j.promoted === 'rainbow').length)
+        promotions.push('rainbow')
+      if (specials.nebula > jewels.filter(j => j.promoted === 'nebula').length)
+        promotions.push('nebula')
+
+      if (promotions.length > 0) {
+        const length = Object.values(specials).reduce((a, b) => a + b)
+        const chance = length + this.board.level.size * (this.board.level.size / 2)
+        const rnd = Math.floor(Math.random() * chance)
+        if (rnd < promotions.length) this.promoted = Object.values(promotions)[rnd]
+      }
+    }
   }
 
-  async arrive () {
-    const time = `${((this.y + 1) / (this.board.level.size * 2)).toFixed(2)}s`
-
-    await this.game.setStylesWithTransition(this, {
-      opacity: null, transform: null, transitionDuration: time
-    })
-
-    await this.game.setStyles(this, {
-      transitionDuration: null
-    })
-
-    this.classList.remove('arriving')
+  async move (arriving = true) {
+    this.removeAttribute('hidden')
+    if (arriving) {
+      this.classList.add('arriving')
+      await this.game.delay(250)
+      this.classList.remove('arriving')
+    } else {
+      const deltaY = this.slot.getBoundingClientRect().height * (this.y + 1)
+      this.style.transform = `translate3d(0, ${-deltaY}px, 0)`
+      await this.game.delay()
+      this.classList.add('falling')
+      this.style.transform = null
+      await this.game.delay(250)
+      this.classList.remove('falling')
+    }
   }
 }
 

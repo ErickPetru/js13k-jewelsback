@@ -317,7 +317,10 @@ export default class MatchChecker {
 
   promote (canPromote, matches, jewel, special) {
     matches = matches.filter(m => m !== null)
-    if (canPromote && matches.length > 0) jewel.promoted = special
+    if (canPromote && matches.length > 0) {
+      jewel.futurePromotion = true
+      jewel.promoted = special
+    }
     return matches
   }
 }

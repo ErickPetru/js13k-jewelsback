@@ -12,6 +12,13 @@ export default class Slot extends HTMLElement {
     this.addEventListener('dragstart', (event) => event.preventDefault())
   }
 
+  connectedCallback () {
+    if (this.y === 0) this.classList.add('first-row')
+    if (this.y === this.board.level.size - 1) this.classList.add('last-row')
+    if (this.x === 0) this.classList.add('first-column')
+    if (this.x === this.board.level.size - 1) this.classList.add('last-column')
+  }
+
   get locked () {
     return this.getAttribute('locked') === '' ? true : false
   }
@@ -69,12 +76,11 @@ export default class Slot extends HTMLElement {
   }
 
   set jewel (value) {
-    this.game.enableTransitions(value, false)
     value.x = this.x
     value.y = this.y
-    this.game.setStyles(value, { transform: null })
-    this.appendChild(value)
-    this.game.enableTransitions(value)
+    value.classList.remove('moving')
+    value.style.transform = null
+    this.append(value)
   }
 
   mousedown () {

@@ -1,16 +1,30 @@
 @keyframes slot-selected
   0%
-    outline-color: #3695
+    outline-color: #8be5
     outline-offset: -5px
+    outline-width: 5px
   100%
-    outline-color: #3697
+    outline-color: #8be7
     outline-offset: -7px
+    outline-width: 7px
 
 @keyframes slot-exploding
   0%, 100%
-    box-shadow: inset 0 0 0 #fff3, 0 0 0 #fff3
+    box-shadow: inset 0 0 0 #fff3, 0 0 0 #fdd5
   15%, 25%
-    box-shadow: inset 0 0 100px #fff3, 0 0 50px #fff3
+    box-shadow: inset 0 0 200px #fff3, 0 0 50px #fdd5
+
+@keyframes jewel-arriving
+  0%
+    transform: translate3d(0, -100vh, 0)
+  100%
+    transform: translate3d(0, 0, 0)
+
+@keyframes jewel-falling
+  0%
+    transform: translate3d(0, -100%, 0)
+  100%
+    transform: translate3d(0, 0, 0)
 
 @keyframes jewel-exploding
   0%
@@ -18,18 +32,18 @@
     transform: scale(1) translateY(0)
   100%
     opacity: 0
-    transform: scale(1.5) translateY(5%)
+    transform: scale(0.25) translateY(5%)
 
 @keyframes jewel-brightening
   0%
     filter: brightness(1)
   100%
-    filter: brightness(1.1)
+    filter: brightness(1.2)
 
 @keyframes star-blinking
   0%
     transform: translateX(-50%)
     filter: brightness(1) drop-shadow(0 0 .5px #fffa)
   100%
-    transform: translateX(-50%) scale(.8)
+    transform: translateX(-50%) scale(.9)
     filter: brightness(1.075) drop-shadow(0 0 1px #fffa)

@@ -1,6 +1,5 @@
-dist/bundled/
-dist/inlined/
-dist/zipped/
+dist/
+!dist/index.html
 node_modules/
 .npm
 .eslintcache
@@ -8,3 +7,4 @@ node_modules/
 .env
 .env.test
 .cache
+*.bak

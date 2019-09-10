@@ -6,6 +6,7 @@ import MoveChecker from './MoveChecker'
 export default class Board extends HTMLElement {
   slots = []
   level = null
+  height = null
 
   constructor (game) {
     super()
@@ -21,6 +22,10 @@ export default class Board extends HTMLElement {
         this.unselectAll()
       }
     })
+  }
+
+  connectedCallback () {
+    this.height = this.offsetHeight
   }
 
   get grabbing () {
@@ -50,12 +55,12 @@ export default class Board extends HTMLElement {
   }
 
   get occupiedSlots () {
-    return this.unlockedSlots.filter(s => s.jewel)
+    return this.unlockedSlots.filter(s => s.jewel && !s.jewel.hasAttribute('hidden'))
   }
 
   get emptySlots () {
-    return this.unlockedSlots.filter(s =>
-      !s.jewel || s.jewel.classList.contains('moving'))
+    return this.unlockedSlots.filter(s => !s.jewel ||
+      s.jewel.hasAttribute('hidden') || s.jewel.classList.contains('moving'))
   }
 
   get emptySlotsGroupedByRow () {
@@ -69,69 +74,6 @@ export default class Board extends HTMLElement {
     })
 
     return groups
-  }
-
-  async startLevel (level) {
-    this.slots = []
-    this.level = level
-
-    this.animating = true
-    this.game.setStyles(this, {
-      opacity: 0, transform: 'scale(.75)',
-      gridTemplateColumns: `repeat(${level.size}, 1fr)`,
-      gridTemplateRows: `repeat(${level.size}, 1fr)`,
-    })
-
-    for (let y = 0; y < level.size; y++) {
-      for (let x = 0; x < level.size; x++) {
-        const slot = new Slot(x, y)
-        slot.locked = level.locks.some(l => l.x === x && l.y === y)
-        this.append(slot)
-        this.slots.push(slot)
-      }
-    }
-
-    await this.game.setStylesWithTransition(this, {
-      opacity: 1, transform: 'scale(1)'
-    })
-
-    await this.fillEmptySlots()
-    this.animating = false
-  }
-
-  async fillEmptySlots () {
-    const rows = this.emptySlotsGroupedByRow
-    const spec = this.level.specials
-
-    for (let row of rows.keys()) {
-      for (let slot of rows.get(row)) {
-        const shape = this.matchChecker.generateUnmatchableShape(slot.x, slot.y)
-        const jewel = new Jewel(slot.x, slot.y, shape)
-        slot.append(jewel)
-
-        if (spec) {
-          const promotions = []
-
-          if (spec.smoke > this.findJewelsBySpecial('smoke').length)
-            promotions.push('smoke')
-          if (spec.fire > this.findJewelsBySpecial('fire').length)
-            promotions.push('fire')
-          if (spec.star > this.findJewelsBySpecial('star').length)
-            promotions.push('star')
-          if (spec.rainbow > this.findJewelsBySpecial('rainbow').length)
-            promotions.push('rainbow')
-          if (spec.nebula > this.findJewelsBySpecial('nebula').length)
-            promotions.push('nebula')
-
-          jewel.promoted = jewel.generateRandomPromotion(promotions)
-        }
-
-        slot.jewel.arrive()
-      }
-
-      // TODO: Use CSS variables to better configure timing
-      await this.game.delay(this.game.ENV === 'prod' ? 150 : 1)
-    }
   }
 
   findSlotByPosition(x, y) {
@@ -156,6 +98,10 @@ export default class Board extends HTMLElement {
     return this.querySelectorAll(`jewel-piece[promoted="${special}"]`)
   }
 
+  findJewelsPromoted() {
+    return Array.from(this.querySelectorAll(`jewel-piece[promoted]`))
+  }
+
   unselectAll () {
     for (let slot of this.unlockedSlots) {
       slot.targetable = false
@@ -168,43 +114,68 @@ export default class Board extends HTMLElement {
     for (let jewel of jewels) jewel.slot.targetable = true
   }
 
+  async startLevel (level) {
+    this.slots = []
+    this.level = level
+    this.style.gridTemplateColumns = this.style.gridTemplateRows = `repeat(${level.size}, 1fr)`
+
+    for (let y = 0; y < level.size; y++) {
+      for (let x = 0; x < level.size; x++) {
+        const slot = new Slot(x, y)
+        slot.locked = level.locks.some(l => l.x === x && l.y === y)
+        this.append(slot)
+        this.slots.push(slot)
+      }
+    }
+
+    await this.game.delay(250)
+    await this.fillEmptySlots()
+  }
+
+  async fillEmptySlots (arriving = true) {
+    this.animating = true
+    const rows = this.emptySlotsGroupedByRow
+    for (let row of rows.keys()) {
+      for (let slot of rows.get(row)) {
+        if (slot.jewel) slot.jewel.remove()
+        const shape = this.matchChecker.generateUnmatchableShape(slot.x, slot.y)
+        const jewel = new Jewel(slot, shape)
+        jewel.generateRandomPromotion(this.level.specials, this.findJewelsPromoted())
+        jewel.move(arriving)
+      }
+      await this.game.delay(150)
+    }
+    this.animating = false
+  }
+
   async flipJewels (current, destination) {
     if (!current || !destination) return
 
     this.animating = true
+
+    current.classList.add('flipping')
+    destination.classList.add('flipping')
+
+    const currentRect = current.getBoundingClientRect()
+    const destinationRect = destination.getBoundingClientRect()
+
     if (current.x > destination.x) {
-      this.game.setStylesWithTransition(current, {
-        transform: `translateX(${-current.slot.offsetWidth}px)`
-      })
-
-      await this.game.setStylesWithTransition(destination, {
-        transform: `translateX(${destination.slot.offsetWidth}px)`
-      })
+      current.style.transform = `translate3d(${-currentRect.width}px, 0, 0)`
+      destination.style.transform = `translate3d(${destinationRect.width}px, 0, 0)`
     } else if (current.x < destination.x) {
-      this.game.setStylesWithTransition(current, {
-        transform: `translateX(${current.slot.offsetWidth}px)`
-      })
-
-      await this.game.setStylesWithTransition(destination, {
-        transform: `translateX(${-destination.slot.offsetWidth}px)`
-      })
+      current.style.transform = `translate3d(${currentRect.width}px, 0, 0)`
+      destination.style.transform = `translate3d(${-destinationRect.width}px, 0, 0)`
     } else if (current.y > destination.y) {
-      this.game.setStylesWithTransition(current, {
-        transform: `translateY(${-current.slot.offsetHeight}px)`
-      })
-
-      await this.game.setStylesWithTransition(destination, {
-        transform: `translateY(${destination.slot.offsetHeight}px)`
-      })
+      current.style.transform = `translate3d(0, ${-currentRect.height}px, 0)`
+      destination.style.transform = `translate3d(0, ${destinationRect.height}px, 0)`
     } else {
-      this.game.setStylesWithTransition(current, {
-        transform: `translateY(${current.slot.offsetHeight}px)`
-      })
-
-      await this.game.setStylesWithTransition(destination, {
-        transform: `translateY(${-destination.slot.offsetHeight}px)`
-      })
+      current.style.transform = `translate3d(0, ${currentRect.height}px, 0)`
+      destination.style.transform = `translate3d(0, ${-destinationRect.height}px, 0)`
     }
+
+    await this.game.delay(150)
+    current.classList.remove('flipping')
+    destination.classList.remove('flipping')
 
     const slot1 = this.findSlotByPosition(destination.x, destination.y)
     const slot2 = this.findSlotByPosition(current.x, current.y)
@@ -221,27 +192,33 @@ export default class Board extends HTMLElement {
       for (let x = 0; x < this.level.size; x++) {
         const jewel = this.findJewelByPosition(x, y)
         if (!jewel) continue
-        jewels.push(...this.matchChecker.findPossibleMatches(jewel))
+
+        // TODO: Improved explosions for special jewels.
         // TODO: Create special jewels caused by deep explosions.
+
+        jewels.push(...this.matchChecker.findPossibleMatches(jewel))
       }
     }
 
     if (jewels.length === 0) return
 
     this.animating = true
-    const normalJewels = jewels.filter(jewel => !jewel.promoted)
+    const normalJewels = jewels.filter(jewel => !jewel.futurePromotion)
     for (let jewel of normalJewels) {
       jewel.slot.classList.add('exploding')
       jewel.classList.add('exploding')
     }
 
-    // TODO: Improved explosions for special jewels.
+    await this.game.delay(250)
     // TODO: Increase score/level up.
 
-    await this.game.delay(100)
-    normalJewels.forEach(jewel => jewel.remove())
+    normalJewels.forEach(jewel => {
+      jewel.setAttribute('hidden', '')
+      jewel.classList.remove('exploding')
+    })
+
     await this.moveRows()
-    await this.fillEmptySlots()
+    await this.fillEmptySlots(false)
     await this.explodeMatches()
     this.animating = false
   }
@@ -249,7 +226,9 @@ export default class Board extends HTMLElement {
   async moveRows () {
     const alreadyChecked = []
     for (let y = this.level.size - 1; y > -1; y--) {
+      let somethingMoved = false
       const row = this.emptySlots.filter(slot => slot.y === y)
+
       for (let empty of row) {
         const previous = this.occupiedSlots
           .filter(slot => alreadyChecked.indexOf(slot) === -1)
@@ -259,31 +238,30 @@ export default class Board extends HTMLElement {
         alreadyChecked.push(previous)
         if (!previous || !previous.jewel) continue
 
+        somethingMoved = true
         empty.classList.remove('exploding')
+        previous.jewel.futureSlot = empty
         previous.jewel.classList.add('moving')
-        previous.jewel.future = empty
-
-        const difference = empty.y - previous.y
-        this.game.setStylesWithTransition(previous.jewel, {
-          transform: `translateY(${previous.offsetHeight * difference}px)`
-        })
+        const deltaY = previous.getBoundingClientRect().height * (empty.y - previous.y)
+        previous.jewel.style.transform = `translate3d(0, ${deltaY}px, 0)`
       }
 
-      await this.game.delay(125)
-    }
+      if (somethingMoved) {
+        await this.game.delay(150)
 
-    const moving = this.jewels
-      .filter(j => j.classList.contains('moving'))
-      .sort((a, b) => b.y - a.y)
+        const moving = this.jewels
+        .filter(j => j.classList.contains('moving'))
+        .sort((a, b) => b.y - a.y)
 
-    for (let jewel of moving) {
-      const destination = jewel.future
-      jewel.classList.remove('moving')
-      this.game.setStyles(jewel, { transform: null })
-      destination.append(jewel)
-      jewel.x = destination.x
-      jewel.y = destination.y
-      delete jewel.future
+        for (let jewel of moving) {
+          const currentSlot = jewel.slot
+          const destinationSlot = jewel.futureSlot
+          const destinationJewel = destinationSlot.jewel
+          currentSlot.jewel = destinationJewel
+          destinationSlot.jewel = jewel
+          delete jewel.futureSlot
+        }
+      }
     }
   }
 }
