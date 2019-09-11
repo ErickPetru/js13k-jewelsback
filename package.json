@@ -24,7 +24,7 @@
     "build": "npm run build:clear && npm run build:parcel && npm run build:copy && npm run build:inline && npm run build:zip",
     "build:check": "node ./build/check.js",
     "finish": "npm run build && npm run build:check",
-    "deploy": "git subtree push --prefix dist/inlined origin gh-pages"
+    "deploy": "cd dist/inlined && git add --all && git commit -m 'Deploy updated' && git push origin gh-pages"
   },
   "browserslist": [
     "last 1 Chrome version"
