@@ -1,5 +1,8 @@
 /* global game */
+import createBackground from './Background'
 import Board from './Board'
+
+createBackground()
 
 new (class Game {
   levels = [
@@ -10,6 +13,8 @@ new (class Game {
     }
   ]
 
+  _score = 0
+
   constructor () {
     this.board = new Board(this)
     document.querySelector('main').append(this.board)
@@ -19,5 +24,14 @@ new (class Game {
   delay (value = 0, ...args) {
     if (!value) return new Promise(r => requestAnimationFrame(r))
     else return new Promise(r => setTimeout(r, value, ...args))
+  }
+
+  get score () {
+    return this._score
+  }
+
+  set score (value) {
+    this._score = value
+    document.getElementById('score').textContent = value
   }
 })

@@ -1,3 +1,5 @@
+import Jewel from './Jewel'
+
 export default class MoveChecker {
   constructor (board) {
     this.board = board
@@ -43,7 +45,9 @@ export default class MoveChecker {
     if (selected.type === target.type) return null
 
     for (let jewel of neighbours) {
-      if (!jewel || selected.type !== jewel.type) return null
+      if (!jewel || (selected.type !== jewel.type &&
+        selected.promoted !== Jewel.specials.nebula &&
+        selected.promoted !== Jewel.specials.rainbow)) return null
     }
 
     return reverse ? selected : target

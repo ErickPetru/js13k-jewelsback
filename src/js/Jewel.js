@@ -126,7 +126,7 @@ export default class Jewel extends HTMLElement {
     this.removeAttribute('hidden')
     if (arriving) {
       this.classList.add('arriving')
-      await this.game.delay(250)
+      await this.game.delay(150)
       this.classList.remove('arriving')
     } else {
       const deltaY = this.slot.getBoundingClientRect().height * (this.y + 1)
@@ -134,7 +134,7 @@ export default class Jewel extends HTMLElement {
       await this.game.delay()
       this.classList.add('falling')
       this.style.transform = null
-      await this.game.delay(250)
+      await this.game.delay(150)
       this.classList.remove('falling')
     }
   }

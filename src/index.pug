@@ -6,5 +6,16 @@ html(lang="en")
     title Jewelsback
     link(rel="stylesheet", href="css/base.styl")
   body
-    main
+    div#background
+    div#content
+      header
+        h1
+          span.text-shine(data-text="Jewels") Jewels
+          span.text-shine(data-text="back") back
+      main
+      section
+        label.text-shine(data-text="Score:") Score:
+        strong#score.text-shine(data-text="0") 0
+    aside#message
+      span.text-shine(data-text="Game over") Game over
     script(src="js/index.js")

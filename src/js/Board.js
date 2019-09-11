@@ -7,6 +7,7 @@ export default class Board extends HTMLElement {
   slots = []
   level = null
   height = null
+  scoreMultiplier = 0
 
   constructor (game) {
     super()
@@ -94,6 +95,10 @@ export default class Board extends HTMLElement {
     return this.querySelector(`board-slot[selected] > jewel-piece`)
   }
 
+  findJewelsByType(type) {
+    return this.querySelectorAll(`jewel-piece[type="${type}"]`)
+  }
+
   findJewelsBySpecial(special) {
     return this.querySelectorAll(`jewel-piece[promoted="${special}"]`)
   }
@@ -143,7 +148,7 @@ export default class Board extends HTMLElement {
         jewel.generateRandomPromotion(this.level.specials, this.findJewelsPromoted())
         jewel.move(arriving)
       }
-      await this.game.delay(150)
+      await this.game.delay(arriving ? 200 : 100)
     }
     this.animating = false
   }
@@ -152,10 +157,10 @@ export default class Board extends HTMLElement {
     if (!current || !destination) return
 
     this.animating = true
+    this.scoreMultiplier = 0
 
     current.classList.add('flipping')
     destination.classList.add('flipping')
-
     const currentRect = current.getBoundingClientRect()
     const destinationRect = destination.getBoundingClientRect()
 
@@ -182,8 +187,55 @@ export default class Board extends HTMLElement {
     slot1.jewel = current
     slot2.jewel = destination
 
-    this.explodeMatches()
+    if (current.promoted === Jewel.specials.nebula)
+      this.explodeNebula(current, destination)
+    else if (destination.promoted === Jewel.specials.nebula)
+      this.explodeNebula(destination, current)
+    else if (current.promoted === Jewel.specials.rainbow)
+      this.explodeRainbow(current, destination)
+    else if (destination.promoted === Jewel.specials.rainbow)
+      this.explodeRainbow(destination, current)
+    else
+      this.explodeMatches()
+
     this.unselectAll()
+  }
+
+  async explodeNebula(nebula, neighbor) {
+    const promotions = []
+    const jewels = [nebula]
+
+    jewels.push(...this.findJewelsByType(neighbor.type))
+    jewels.forEach(j => {
+      if (j.promoted && !j.futurePromotion) jewels.push(j)
+      else promotions.push(j)
+    })
+
+    if (promotions.length > 0) {
+      this.scoreMultiplier++
+
+      promotions.forEach(j => {
+        this.game.score += this.scoreMultiplier
+        j.slot.classList.add('exploding')
+        j.classList.add('exploding')
+      })
+
+      await this.game.delay(350)
+
+      promotions.forEach(j => {
+        j.classList.remove('exploding')
+        j.promoted = Jewel.specials.rainbow
+        j.futurePromotion = true
+      })
+    }
+
+    this.finishExplosion(jewels)
+  }
+
+  async explodeRainbow(rainbow, neighbor) {
+    const jewels = [rainbow]
+    jewels.push(...this.findJewelsByType(neighbor.type))
+    this.finishExplosion(jewels)
   }
 
   async explodeMatches () {
@@ -200,19 +252,24 @@ export default class Board extends HTMLElement {
       }
     }
 
+    this.finishExplosion(jewels)
+  }
+
+  async finishExplosion (jewels) {
     if (jewels.length === 0) return
 
     this.animating = true
-    const normalJewels = jewels.filter(jewel => !jewel.futurePromotion)
-    for (let jewel of normalJewels) {
-      jewel.slot.classList.add('exploding')
-      jewel.classList.add('exploding')
-    }
+    this.scoreMultiplier++
 
-    await this.game.delay(250)
-    // TODO: Increase score/level up.
+    jewels.filter(j => !j.futurePromotion).forEach(j => {
+      this.game.score += this.scoreMultiplier
+      j.slot.classList.add('exploding')
+      j.classList.add('exploding')
+    })
 
-    normalJewels.forEach(jewel => {
+    await this.game.delay(350)
+
+    jewels.filter(j => !j.futurePromotion).forEach(jewel => {
       jewel.setAttribute('hidden', '')
       jewel.classList.remove('exploding')
     })
@@ -220,6 +277,8 @@ export default class Board extends HTMLElement {
     await this.moveRows()
     await this.fillEmptySlots(false)
     await this.explodeMatches()
+
+    jewels.filter(j => j.futurePromotion).forEach(j => j.futurePromotion = false)
     this.animating = false
   }
 
@@ -247,7 +306,7 @@ export default class Board extends HTMLElement {
       }
 
       if (somethingMoved) {
-        await this.game.delay(150)
+        await this.game.delay(100)
 
         const moving = this.jewels
         .filter(j => j.classList.contains('moving'))

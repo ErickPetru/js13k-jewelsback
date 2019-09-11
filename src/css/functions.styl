@@ -1,0 +1,13 @@
+geometric-pattern(args...)
+  background-color: args[0]
+  background-image: linear-gradient(30deg, args[2] 12%, transparent 12.5%, transparent 87%, args[2] 87.5%, args[2]), linear-gradient(150deg, args[2] 12%, transparent 12.5%, transparent 87%, args[2] 87.5%, args[2]), linear-gradient(30deg, args[2] 12%, transparent 12.5%, transparent 87%, args[2] 87.5%, args[2]), linear-gradient(150deg, args[2] 12%, transparent 12.5%, transparent 87%, args[2] 87.5%, args[2]), linear-gradient(60deg, args[1] 25%, transparent 25.5%, transparent 75%, args[1] 75%, args[1]), linear-gradient(60deg, args[1] 25%, transparent 25.5%, transparent 75%, args[1] 75%, args[1])
+  background-position: 0 0, 0 0, args[3] args[4], args[3] args[4], 0 0, args[3] args[4]
+  background-size: args[3] args[4]
+
+conic-background($c, $deg = 45deg)
+  $arr = ($c + 12%), $c, ($c - 7%), ($c + 8%), $c, ($c - 5%), ($c + 12%), $c, ($c - 5%), ($c + 7%), $c, ($c - 7%), ($c + 15%)
+  background: radial-gradient(($c + 45%), ($c - 25%))
+  background: conic-gradient(from $deg, $arr)
+
+random(min, max)
+  return floor(math(0, 'random') * (max - min + 1) + min)
