@@ -18,11 +18,13 @@
     "dev": "parcel src/index.pug -p 8080",
     "build:clear": "node ./build/clear.js",
     "build:parcel": "parcel build src/index.pug -d ./dist/bundled --no-source-maps",
+    "build:copy": "xcopy dist\\bundled dist\\inlined /Q /Y",
     "build:inline": "html-inline -i ./dist/bundled/index.html -o ./dist/inlined/index.html && html-inline -i ./dist/bundled/index.html -o ./dist/index.html",
     "build:zip": "node ./build/zip.js",
-    "build": "npm run build:clear && npm run build:parcel && npm run build:inline && npm run build:zip",
+    "build": "npm run build:clear && npm run build:parcel && npm run build:copy && npm run build:inline && npm run build:zip",
     "build:check": "node ./build/check.js",
-    "finish": "npm run build && npm run build:check"
+    "finish": "npm run build && npm run build:check",
+    "deploy": "git subtree push --prefix dist/inlined origin gh-pages"
   },
   "browserslist": [
     "last 1 Chrome version"

@@ -1,5 +1,5 @@
-dist/
-!dist/index.html
+dist/*
+!dist/inlined
 node_modules/
 .npm
 .eslintcache
