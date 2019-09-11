@@ -32,6 +32,8 @@ new (class Game {
 
   set score (value) {
     this._score = value
-    document.getElementById('score').textContent = value
+    const el = document.getElementById('score')
+    el.textContent = value
+    el.setAttribute('data-text', value)
   }
 })
