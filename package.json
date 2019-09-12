@@ -14,6 +14,10 @@
     "type": "git",
     "url": "https://github.com/ErickPetru/js13k-jewelsback.git"
   },
+  "images" : {
+    "image_large": "image_large.png",
+    "image_thumbnail": "image_thumbnail.png"
+  },
   "scripts": {
     "dev": "parcel src/index.pug -p 8080",
     "build:clear": "node ./build/clear.js",
