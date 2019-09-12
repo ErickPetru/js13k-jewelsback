@@ -2,12 +2,14 @@ import Slot from './Slot'
 import Jewel from './Jewel'
 import MatchChecker from './MatchChecker'
 import MoveChecker from './MoveChecker'
+// import Sounds from './Sounds'
 
 export default class Board extends HTMLElement {
   slots = []
   level = null
   height = null
   scoreMultiplier = 0
+  static startingLevel = 0
 
   constructor (game) {
     super()
@@ -107,7 +109,7 @@ export default class Board extends HTMLElement {
     return Array.from(this.querySelectorAll(`jewel-piece[promoted]`))
   }
 
-  unselectAll () {
+  async unselectAll () {
     for (let slot of this.unlockedSlots) {
       slot.targetable = false
       slot.selected = false
@@ -119,38 +121,93 @@ export default class Board extends HTMLElement {
     for (let jewel of jewels) jewel.slot.targetable = true
   }
 
-  async startLevel (level) {
-    this.slots = []
-    this.level = level
-    this.style.gridTemplateColumns = this.style.gridTemplateRows = `repeat(${level.size}, 1fr)`
+  async startLevel (level = Board.startingLevel) {
+    if (this.game.levels.length - 1 < level) {
+      // Sounds.won.play()
+      this.showGameEnd('Congratulations!', 'You won!')
+      this.explodeAll(false)
+      return
+    }
 
-    for (let y = 0; y < level.size; y++) {
-      for (let x = 0; x < level.size; x++) {
+    this.animating = true
+    this.level = this.game.levels.filter(l => l.index === level).shift()
+    this.slots.forEach(slot => slot.remove())
+    this.slots = []
+    this.scoreMultiplier = 0
+
+    if (this.level.index === Board.startingLevel) {
+      this.style.opacity = 0
+      await this.game.delay(500)
+    }
+
+    this.style.gridTemplateColumns =
+      this.style.gridTemplateRows = `repeat(${this.level.size}, 1fr)`
+
+    for (let y = 0; y < this.level.size; y++) {
+      for (let x = 0; x < this.level.size; x++) {
         const slot = new Slot(x, y)
-        slot.locked = level.locks.some(l => l.x === x && l.y === y)
+        slot.locked = this.level.locks &&
+          this.level.locks.some(l => l.x === x && l.y === y)
         this.append(slot)
         this.slots.push(slot)
       }
     }
 
-    await this.game.delay(250)
+    if (this.level.name) {
+      // Sounds.won.play()
+      this.game.message = this.level.name
+      await this.game.delay(2200)
+      if (this.level.description) {
+        this.game.message = this.level.description
+        const time = this.level.description.split(' ').length * 250
+        await this.game.delay(time)
+      }
+    } else {
+      this.game.message = `Level ${this.level.index}`
+      await this.game.delay(1500)
+    }
+
+    this.style.opacity = 1
+    await this.game.delay(300)
     await this.fillEmptySlots()
+
+    if (this.level.index === Board.startingLevel) {
+      this.game.message = 'Let\'s go!'
+      await this.game.delay(600)
+    }
+
+    delete this.level.specials
+    this.game.message = ''
+    this.animating = false
+
+    if (!await this.hasPossibleMovesRemaining()) {
+      this.animating = true
+      await this.game.delay(300)
+      // Sounds.gameOver.play()
+      return this.showGameEnd('Out of luck...', 'Game Over!')
+    }
   }
 
   async fillEmptySlots (arriving = true) {
-    this.animating = true
     const rows = this.emptySlotsGroupedByRow
     for (let row of rows.keys()) {
       for (let slot of rows.get(row)) {
         if (slot.jewel) slot.jewel.remove()
-        const shape = this.matchChecker.generateUnmatchableShape(slot.x, slot.y)
+
+        let shape = null
+        try {
+          shape = this.matchChecker.generateUnmatchableShape(slot.x, slot.y)
+        } catch {
+          const shapes = Jewel.allTypes
+          shape = shapes[Math.random() * shapes.length << 0]
+        }
+
         const jewel = new Jewel(slot, shape)
         jewel.generateRandomPromotion(this.level.specials, this.findJewelsPromoted())
         jewel.move(arriving)
       }
       await this.game.delay(arriving ? 200 : 100)
     }
-    this.animating = false
   }
 
   async flipJewels (current, destination) {
@@ -187,18 +244,56 @@ export default class Board extends HTMLElement {
     slot1.jewel = current
     slot2.jewel = destination
 
-    if (current.promoted === Jewel.specials.nebula)
-      this.explodeNebula(current, destination)
+    if (current.promoted === Jewel.specials.nebula &&
+      destination.promoted === Jewel.specials.nebula) {
+      // Sounds.gameOver.play()
+      return this.showGameEnd('Greed is ugly...', 'Game Over!')
+    } else if (current.promoted === Jewel.specials.rainbow &&
+      destination.promoted === Jewel.specials.rainbow)
+      await this.explodeAll()
+    else if (current.promoted === Jewel.specials.nebula)
+      await this.explodeNebula(current, destination)
     else if (destination.promoted === Jewel.specials.nebula)
-      this.explodeNebula(destination, current)
+      await this.explodeNebula(destination, current)
     else if (current.promoted === Jewel.specials.rainbow)
-      this.explodeRainbow(current, destination)
+      await this.explodeRainbow(current, destination)
     else if (destination.promoted === Jewel.specials.rainbow)
-      this.explodeRainbow(destination, current)
+      await this.explodeRainbow(destination, current)
     else
-      this.explodeMatches()
+      await this.explodeMatches()
 
-    this.unselectAll()
+    await this.unselectAll()
+
+    if (await this.isLevelCompleted()) {
+      setTimeout(() => this.startLevel(this.level.index + 1), 150)
+      return true
+    } else if (await this.hasPossibleMovesRemaining()) {
+      this.animating = false
+      return true
+    } else {
+      // Sounds.gameOver.play()
+      this.showGameEnd('No more moves...', 'Game Over!')
+      return false
+    }
+  }
+
+  async showGameEnd (prephrase, phrase) {
+    if (prephrase) {
+      this.animating = true
+      this.game.message = prephrase
+      await this.game.delay(1500)
+    }
+
+    this.game.message = phrase
+    if (this.game.score > 0) {
+      const finalScore = document.getElementById('finalScore')
+      finalScore.textContent = 'Final score: ' + this.game.score
+      finalScore.removeAttribute('hidden')
+    }
+  }
+
+  async explodeAll(refill = true) {
+    await this.finishExplosion(this.jewels, refill)
   }
 
   async explodeNebula(nebula, neighbor) {
@@ -229,13 +324,13 @@ export default class Board extends HTMLElement {
       })
     }
 
-    this.finishExplosion(jewels)
+    await this.finishExplosion(jewels)
   }
 
   async explodeRainbow(rainbow, neighbor) {
     const jewels = [rainbow]
     jewels.push(...this.findJewelsByType(neighbor.type))
-    this.finishExplosion(jewels)
+    await this.finishExplosion(jewels)
   }
 
   async explodeMatches () {
@@ -244,24 +339,24 @@ export default class Board extends HTMLElement {
       for (let x = 0; x < this.level.size; x++) {
         const jewel = this.findJewelByPosition(x, y)
         if (!jewel) continue
-
-        // TODO: Improved explosions for special jewels.
-        // TODO: Create special jewels caused by deep explosions.
-
         jewels.push(...this.matchChecker.findPossibleMatches(jewel))
       }
     }
 
-    this.finishExplosion(jewels)
+    await this.finishExplosion(jewels)
   }
 
-  async finishExplosion (jewels) {
+  async finishExplosion (jewels, refill = true) {
     if (jewels.length === 0) return
 
+    // Sounds.plop.play()
     this.animating = true
     this.scoreMultiplier++
 
-    jewels.filter(j => !j.futurePromotion).forEach(j => {
+    let explosions = [...new Set(jewels.filter(j => j !== null))]
+    if (refill) explosions = explosions.filter(j => !j.futurePromotion)
+
+    explosions.forEach(j => {
       this.game.score += this.scoreMultiplier
       j.slot.classList.add('exploding')
       j.classList.add('exploding')
@@ -269,16 +364,18 @@ export default class Board extends HTMLElement {
 
     await this.game.delay(350)
 
-    jewels.filter(j => !j.futurePromotion).forEach(jewel => {
-      jewel.setAttribute('hidden', '')
-      jewel.classList.remove('exploding')
+    explosions.forEach(j => {
+      j.setAttribute('hidden', '')
+      j.classList.remove('exploding')
     })
 
-    await this.moveRows()
-    await this.fillEmptySlots(false)
-    await this.explodeMatches()
+    if (refill) {
+      await this.moveRows()
+      await this.fillEmptySlots(false)
+      await this.explodeMatches()
+      jewels.filter(j => j.futurePromotion).forEach(j => j.futurePromotion = false)
+    }
 
-    jewels.filter(j => j.futurePromotion).forEach(j => j.futurePromotion = false)
     this.animating = false
   }
 
@@ -322,6 +419,34 @@ export default class Board extends HTMLElement {
         }
       }
     }
+  }
+
+  async isLevelCompleted () {
+    if (this.game.score >= this.level.milestone) {
+      if (this.level.index !== this.game.levels.length - 1) {
+        // Sounds.levelUp.play()
+        this.game.message = 'Level completed!'
+        this.scoreMultiplier = -1
+        await this.explodeAll(false)
+        await this.game.delay(1500)
+      }
+      return true
+    }
+
+    return false
+  }
+
+  async hasPossibleMovesRemaining () {
+    const moves = []
+    for (let y = this.level.size - 1; y > -1; y--) {
+      for (let x = 0; x < this.level.size; x++) {
+        const jewel = this.findJewelByPosition(x, y)
+        if (!jewel) continue
+        moves.push(...this.moveChecker.findPossibleMoves(jewel))
+      }
+    }
+
+    return moves.length > 0
   }
 }
 

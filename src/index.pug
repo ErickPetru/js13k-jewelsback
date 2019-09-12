@@ -3,19 +3,29 @@ html(lang="en")
   head
     meta(charset="utf-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    meta(name="monetization", content="$coil.xrptipbot.com/arK3In6TQHuE3u13cZo_BA")
     title Jewelsback
     link(rel="stylesheet", href="css/base.styl")
+    link(href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAKEAAAAAAAAAnAAAAFIAAABpAEdH/wCMjP8AsLD/AAAA4AD39/8A5ub/AAAAAAAAAAAAAAAAAAAAAAAAAAAAERREREREQRERQiIiIiIkERQyhmZmiDBBFCOFVVVTgkEUKDMzMzViQRQoNmd2NWJBFCg2l3c1YkEUKDaapzViQRQoNpqnNWJBFCg2l3c1YkEUKDZndjViQRQoMzMzNYJBFCOFVVVjgkEUMoaGZogyQRFCIiIiIiQRERREREREQRHgBwAAwAMAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA", rel="icon", type="image/x-icon")
   body
     div#background
+
     div#content
       header
         h1
           span.text-shine(data-text="Jewels") Jewels
           span.text-shine(data-text="back") back
-      main
-      section
+        button#start Play now
+
+      main(hidden)
+
+      section(hidden)
         label.text-shine(data-text="Score:") Score:
         strong#score.text-shine(data-text="0") 0
+
     aside#message
-      span.text-shine(data-text="Game over") Game over
+      span.text-shine(data-text="")
+      p#finalScore(hidden) 0
+
+    audio#music(src="audio/harp.ogg", autoplay, loop)
     script(src="js/index.js")

@@ -47,7 +47,9 @@ export default class MoveChecker {
     for (let jewel of neighbours) {
       if (!jewel || (selected.type !== jewel.type &&
         selected.promoted !== Jewel.specials.nebula &&
-        selected.promoted !== Jewel.specials.rainbow)) return null
+        selected.promoted !== Jewel.specials.rainbow &&
+        target.promoted !== Jewel.specials.nebula &&
+        target.promoted !== Jewel.specials.rainbow)) return null
     }
 
     return reverse ? selected : target
@@ -58,6 +60,9 @@ export default class MoveChecker {
     const { x, y } = jewel,
       target = this.board.findJewelByPosition(x, y - 1) // 🌀
     if (!target || target.locked) return []
+
+    if (!reverse && target && (Jewel.superSpecials.includes(jewel.promoted) ||
+      Jewel.superSpecials.includes(target.promoted))) moves.push(target)
 
     /* 🌀💎💎
      * 💎 */
@@ -101,7 +106,7 @@ export default class MoveChecker {
       this.board.findJewelByPosition(x + 1, y - 2),
       this.board.findJewelByPosition(x, y - 2)))
 
-    moves = moves.filter(m => m !== null)
+    moves = [...new Set(moves.filter(m => m !== null))]
     if (moves.length > 0) jewel.matchable = true
     return moves
   }
@@ -111,6 +116,9 @@ export default class MoveChecker {
     const { x, y } = jewel,
       target = this.board.findJewelByPosition(x + 1, y) // 🌀
     if (!target || target.locked) return []
+
+    if (!reverse && target && (Jewel.superSpecials.includes(jewel.promoted) ||
+      Jewel.superSpecials.includes(target.promoted))) moves.push(target)
 
     /* 💎🌀💎💎 */
     moves.push(this.checkMatchable(jewel, target, reverse,
@@ -152,7 +160,7 @@ export default class MoveChecker {
       this.board.findJewelByPosition(x + 1, y + 1),
       this.board.findJewelByPosition(x + 2, y + 1)))
 
-    moves = moves.filter(m => m !== null)
+    moves = [...new Set(moves.filter(m => m !== null))]
     if (moves.length > 0) jewel.matchable = true
     return moves
   }
@@ -162,6 +170,9 @@ export default class MoveChecker {
     const { x, y } = jewel,
       target = this.board.findJewelByPosition(x, y + 1) // 🌀
     if (!target || target.locked) return []
+
+    if (!reverse && target && (Jewel.superSpecials.includes(jewel.promoted) ||
+      Jewel.superSpecials.includes(target.promoted))) moves.push(target)
 
     /* 💎
      * 🌀💎💎 */
@@ -205,7 +216,7 @@ export default class MoveChecker {
       this.board.findJewelByPosition(x + 1, y + 2),
       this.board.findJewelByPosition(x, y + 2)))
 
-    moves = moves.filter(m => m !== null)
+    moves = [...new Set(moves.filter(m => m !== null))]
     if (moves.length > 0) jewel.matchable = true
     return moves
   }
@@ -215,6 +226,9 @@ export default class MoveChecker {
     const { x, y } = jewel,
       target = this.board.findJewelByPosition(x - 1, y) // 🌀
     if (!target || target.locked) return []
+
+    if (!reverse && target && (Jewel.superSpecials.includes(jewel.promoted) ||
+      Jewel.superSpecials.includes(target.promoted))) moves.push(target)
 
     /* 💎💎🌀💎 */
     moves.push(this.checkMatchable(jewel, target, reverse,
@@ -256,7 +270,7 @@ export default class MoveChecker {
       this.board.findJewelByPosition(x - 1, y + 1),
       this.board.findJewelByPosition(x - 2, y + 1)))
 
-    moves = moves.filter(m => m !== null)
+    moves = [...new Set(moves.filter(m => m !== null))]
     if (moves.length > 0) jewel.matchable = true
     return moves
   }

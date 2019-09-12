@@ -1,4 +1,5 @@
 vendors = official webkit
+$mobile-breakpoint = 640px
 
 @import './functions'
 
@@ -12,6 +13,12 @@ body
   padding: 0
   background: #000
   font: 400 1.15em / 1.1 fantasy
+  display: flex
+  flex-flow: column
+  justify-content: center
+  align-items: center
+  @media (max-width: $mobile-breakpoint)
+    font-size: 1em
 
 #background
   position: absolute
@@ -23,11 +30,12 @@ body
 
 #content
   position: relative
+  z-index: 2
   display: flex
   flex-flow: column
   justify-content: center
   align-items: center
-  z-index: 2
+  width: 100%
   @media (orientation: landscape)
     flex-flow: row
 
@@ -48,12 +56,19 @@ header, section
     font: 400 1.5em / .85 fantasy
     span
       display: block
+    @media (max-width: $mobile-breakpoint)
+      margin: 1.5rem 0 1rem
   strong
     font-size: 2em
+    @media (max-width: $mobile-breakpoint)
+      font-size: 1.5em
+      margin-left: 1rem
 
 section
   @media (orientation: portrait)
     margin-top: 1.25rem
+  @media (max-width: $mobile-breakpoint)
+    flex-flow: row
 
 #message
   position: fixed
@@ -63,13 +78,50 @@ section
   left: 0
   z-index: 3
   display: flex
+  flex-flow: column
   justify-content: center
   align-items: center
-  background: #000b
-  backdrop-filter: sepia(.5) brightness(.75) blur(10px)
+  text-align: center
+  background: #0004
+  backdrop-filter: sepia(.5) brightness(.65) blur(10px)
+  padding: 1.25rem
   font-size: 3.5em
   z-index: 3
-  display: none
+  opacity: 0
+  pointer-events: none
+  visibility: hidden
+  transition: opacity 1s ease
+  p
+    font-size: .5em
+    color: #cefe
+  @media (max-width: $mobile-breakpoint)
+    font-size: 2.5em
+
+#start
+  font-size: .75em
+  margin: 1.5rem
+  padding: .75rem 1.5rem
+  border: 2px solid #fff4
+  color: #000000
+  font-weight: 600
+  text-shadow: 0 0 10px #fff5, 0 2px 3px #1cfba977, 0 -2px 3px #1cfba977
+  box-shadow: 0 2px 4px #0005, 0 0 30px #0003
+  background: linear-gradient(45deg, #fff0 45%, #afffe166 50%, #fff0 55%, #fff0 100%),
+    radial-gradient(#1cfba9, #199e92)
+  background-position: -200%, 50% 50%
+  background-size: 250%
+  outline: 2px solid #1cfba900
+  outline-offset: 0
+  transition: all .25s ease-in
+  &:hover, &:focus
+    animation: background-shine 1.5s ease-in infinite both
+    outline-color: #1cfba9
+    outline-offset: 4px
+  &:active
+    transform: scale(.95)
+
+[hidden]
+  display: none !important
 
 .text-shine
   geometric-pattern: #daefff #fff5 #bdd5 10px 17.5px
@@ -83,7 +135,7 @@ section
     left: 0
     width: 100%
     height: 100%
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, .8) 50%, rgba(255, 255, 255, 0) 55%, rgba(255, 255, 255, 0) 100%)
+    background: linear-gradient(45deg, #fff0 45%, #fffe 50%, #fff0 55%, #fff0 100%)
     background-size: 250%
     color: transparent
     content: attr(data-text)

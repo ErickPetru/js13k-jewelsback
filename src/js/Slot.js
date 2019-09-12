@@ -8,7 +8,9 @@ export default class Slot extends HTMLElement {
     this.y = y
 
     this.addEventListener('mousedown', this.mousedown)
+    this.addEventListener('touchstart', this.mousedown, true)
     this.addEventListener('mouseup', this.mouseup)
+    this.addEventListener('touchend', this.mouseup, true)
     this.addEventListener('dragstart', (event) => event.preventDefault())
   }
 
@@ -97,19 +99,27 @@ export default class Slot extends HTMLElement {
     }
   }
 
-  mouseup () {
+  mouseup (event) {
     if (this.board.animating) return
-
     this.board.grabbing = false
-    if (this.locked) return this.board.unselectAll()
 
-    if (this.targetable) {
-      const selected = this.board.findJewelSelected()
-      return this.board.flipJewels(this.jewel, selected)
+    event.preventDefault()
+    event.stopPropagation()
+
+    const target = event.changedTouches && event.changedTouches.length > 0 ?
+      document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY) :
+      this
+
+    if (!target) return
+    if (target.locked) return target.board.unselectAll()
+
+    if (target.targetable) {
+      const selected = target.board.findJewelSelected()
+      return target.board.flipJewels(target.jewel, selected)
     }
 
-    if (!this.lastClick || Date.now() - this.lastClick > 250)
-      this.board.unselectAll()
+    if (!target.lastClick || Date.now() - target.lastClick > 250)
+      target.board.unselectAll()
   }
 }
 

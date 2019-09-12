@@ -37,6 +37,18 @@ export default class Jewel extends HTMLElement {
     nebula: 'nebula'
   }
 
+  static superSpecials = [
+    'rainbow', 'nebula'
+  ]
+
+  static get allTypes () {
+    return Object.keys(Jewel.types)
+  }
+
+  static get allSpecials () {
+    return Object.keys(Jewel.specials)
+  }
+
   get type () {
     return this.getAttribute('type')
   }

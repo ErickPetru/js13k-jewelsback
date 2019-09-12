@@ -16,6 +16,11 @@ jewel-piece
   height: @width
   pointer-events: none
   transform-style: preserve-3d
+  @media (max-width: $mobile-breakpoint)
+    width: 110%
+    height: @width
+    top: -5%
+    left: -5%
   &:not([hidden])
     display: block
   .border, .shape, .shape::after
@@ -121,7 +126,7 @@ jewel-piece:not([promoted='rainbow']):not([promoted='nebula'])
       background: linear-gradient(130deg, alpha($color + 60%, 40%), alpha($color + 40%, 55%))
 
 jewel-piece[promoted]
-  &:not(.arriving)
+  &:not(.arriving):not(.falling):not(.exploding) .shape
     animation: jewel-brightening .5s ease .75s infinite alternate backwards
   &::after
     position: absolute
@@ -136,21 +141,23 @@ jewel-piece[promoted]
     pointer-events: none
 
 jewel-piece[promoted='smoke']
+  filter: drop-shadow(0 0 15px #ccc5) drop-shadow(0 4px 8px #ddda) drop-shadow(0 2px 8px #555)
   &::after
     top: -12%
     width: 115%
     height: @width
     filter: brightness(5) contrast(1.2) opacity(.5)
-    background-image: url('../img/smoke.webp')
+    // background-image: url('../img/smoke.webp')
 
 jewel-piece[promoted='fire']
+  filter: drop-shadow(0 0 8px #ffc10755) drop-shadow(0 4px 8px #ffc107aa) drop-shadow(0 2px 8px #f00)
   &::after
     bottom: 16%
     left: 52%
     width: 170%
     height: 140%
     filter: saturate(2) brightness(1.2) contrast(1.25) opacity(1)
-    background-image: url('../img/fire.webp')
+    // background-image: url('../img/fire.webp')
   &[type="heptagon"]::after
     bottom: 26%
 
@@ -186,13 +193,13 @@ jewel-piece[promoted='nebula']
     border-radius: 50%
     clip-path: none
   .border
+    filter: drop-shadow(0 0 3px #black)
     background: linear-gradient(130deg, $colors[0], $colors[1])
   .shape
     background: linear-gradient(130deg, $color, $colors[2])
   .shape::after
     display: none
   &::after
-    background-image: url('../img/smoke.webp')
-  &::after
     top: -36%
     filter: brightness(0) contrast(2)
+    // background-image: url('../img/smoke.webp')

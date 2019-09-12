@@ -6,7 +6,8 @@ export default class MatchChecker {
   }
 
   generateUnmatchableShape (x, y, undesired) {
-    const shapes = Object.keys(Jewel.types).filter(k => k !== undesired)
+    let shapes = this.board.level.types ? this.board.level.types : Jewel.allTypes
+    shapes = shapes.filter(k => k !== undesired)
     const shape = shapes[Math.random() * shapes.length << 0]
 
     const previous = this.board.findJewelByPosition(x - 1, y)
@@ -41,25 +42,87 @@ export default class MatchChecker {
   findPossibleMatches (jewel) {
     if (!jewel) return []
     const matches = []
+    let alreadyPromoted = false
 
     matches.push(...this.findMatchesForNebula(jewel, jewel.canBePromoted))
-    if (matches.length > 0) return matches
+    if (matches.length > 0) alreadyPromoted = true
 
-    matches.push(...this.findMatchesForRainbow(jewel, jewel.canBePromoted))
-    if (matches.length > 0) return matches
+    matches.push(...this.findMatchesForRainbow(jewel, !alreadyPromoted && jewel.canBePromoted))
+    if (matches.length > 0) alreadyPromoted = true
 
-    matches.push(...this.findMatchesForStar(jewel, jewel.canBePromoted))
-    if (matches.length > 0) return matches
+    matches.push(...this.findMatchesForStar(jewel, !alreadyPromoted && jewel.canBePromoted))
+    if (matches.length > 0) alreadyPromoted = true
 
-    matches.push(...this.findMatchesForFire(jewel, jewel.canBePromoted))
-    if (matches.length > 0) return matches
+    matches.push(...this.findMatchesForFire(jewel, !alreadyPromoted && jewel.canBePromoted))
+    if (matches.length > 0) alreadyPromoted = true
 
-    matches.push(...this.findMatchesForSmoke(jewel, jewel.canBePromoted))
+    matches.push(...this.findMatchesForSmoke(jewel, !alreadyPromoted && jewel.canBePromoted))
+    if (matches.length > 0) alreadyPromoted = true
 
     matches.push(...this.findMatchesOfThree(jewel))
+    matches.push(...this.findMatchesForSpecials(matches))
 
     for (let match of matches) match.checked = true
     return matches
+  }
+
+  findMatchesForSpecials (matches) {
+    let explosions = [...matches]
+
+    if (matches.length > 0 && matches.some(j => j.promoted && !j.futurePromotion)) {
+      const jewels = matches.filter(j => j.promoted && !j.futurePromotion)
+      for (let jewel of jewels) {
+        const { x, y } = jewel
+
+        if (jewel.promoted === Jewel.specials.smoke) {
+          /* 💎💎💎
+           * 💎🌀💎
+           * 💎💎💎 */
+          explosions.push(
+            this.board.findJewelByPosition(x + 1, y),
+            this.board.findJewelByPosition(x - 1, y),
+            this.board.findJewelByPosition(x + 1, y + 1),
+            this.board.findJewelByPosition(x + 1, y - 1),
+            this.board.findJewelByPosition(x - 1, y + 1),
+            this.board.findJewelByPosition(x - 1, y - 1),
+            this.board.findJewelByPosition(x, y + 1),
+            this.board.findJewelByPosition(x, y - 1)
+          )
+        } else if (jewel.promoted === Jewel.specials.fire) {
+          /*      💎
+           *   💎💎💎
+           * 💎💎🌀💎💎
+           *   💎💎💎
+           *      💎 */
+          explosions.push(
+            this.board.findJewelByPosition(x + 1, y),
+            this.board.findJewelByPosition(x - 1, y),
+            this.board.findJewelByPosition(x + 1, y + 1),
+            this.board.findJewelByPosition(x + 1, y - 1),
+            this.board.findJewelByPosition(x - 1, y + 1),
+            this.board.findJewelByPosition(x - 1, y - 1),
+            this.board.findJewelByPosition(x, y + 1),
+            this.board.findJewelByPosition(x, y - 1),
+            this.board.findJewelByPosition(x + 2, y),
+            this.board.findJewelByPosition(x - 2, y),
+            this.board.findJewelByPosition(x, y + 2),
+            this.board.findJewelByPosition(x, y - 2)
+          )
+        } else if (jewel.promoted === Jewel.specials.star) {
+          /*    💎^
+           * <💎🌀💎>
+           *    💎⌄ */
+          for (let i = 0; i < this.board.level.size; i++)
+            explosions.push(this.board.findJewelByPosition(i, y))
+
+          for (let i = 0; i < this.board.level.size; i++)
+            explosions.push(this.board.findJewelByPosition(x, i))
+        }
+      }
+    }
+
+    if (explosions.length > 0) explosions = [...new Set(explosions.filter(j => j !== null))]
+    return explosions
   }
 
   findMatchesForNebula (jewel, canPromote) {
