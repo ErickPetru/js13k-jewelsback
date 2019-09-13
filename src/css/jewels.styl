@@ -4,7 +4,6 @@ $color-circle = #e85f0b
 $color-triangle = #e040fb
 $color-hexagon = #8bc34a
 $color-heptagon = #0f6de6
-$color-rainbow = #dfdcd5
 $color-nebula = #455a64
 
 jewel-piece
@@ -141,27 +140,28 @@ jewel-piece[promoted]
     pointer-events: none
 
 jewel-piece[promoted='smoke']
-  filter: drop-shadow(0 0 15px #ccc5) drop-shadow(0 4px 8px #ddda) drop-shadow(0 2px 8px #555)
+  filter: drop-shadow(0 2px 4px #ddd9) drop-shadow(0 -2px 2px #555) drop-shadow(0 0 15px #ccc4)
   &::after
     top: -12%
     width: 115%
     height: @width
     filter: brightness(5) contrast(1.2) opacity(.5)
-    // background-image: url('../img/smoke.webp')
+    background-image: url('../img/smoke.webp')
 
 jewel-piece[promoted='fire']
-  filter: drop-shadow(0 0 8px #ffc10755) drop-shadow(0 4px 8px #ffc107aa) drop-shadow(0 2px 8px #f00)
+  filter: drop-shadow(0 3px 6px #f007) drop-shadow(0 -2px 2px #ffc10755) drop-shadow(0 0 15px #ffc10755)
   &::after
     bottom: 16%
     left: 52%
     width: 170%
     height: 140%
     filter: saturate(2) brightness(1.2) contrast(1.25) opacity(1)
-    // background-image: url('../img/fire.webp')
+    background-image: url('../img/fire.webp')
   &[type="heptagon"]::after
     bottom: 26%
 
 jewel-piece[promoted='star']
+  filter: drop-shadow(0 2px 4px #e5e5ff77) drop-shadow(0 0 15px #0f6de666)
   &::after
     animation: star-blinking .85s ease .75s infinite alternate both
     width: 110%
@@ -173,6 +173,7 @@ jewel-piece[promoted='star']
 
 jewel-piece[promoted='rainbow']
   padding: 8px
+  filter: drop-shadow(0 0 15px alpha($color-heptagon, 20%)) drop-shadow(0 4px 4px alpha($color-diamond, 50%)) drop-shadow(0 -4px 4px alpha($color-triangle, 40%))
   .border, .shape, .shape::after
     border-radius: 0
     clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)
@@ -189,6 +190,7 @@ jewel-piece[promoted='rainbow']
 jewel-piece[promoted='nebula']
   $color = $color-nebula
   $colors = (($color + 65%) ($color + 5%) ($color - 25%))
+  filter: drop-shadow(0 4px 4px #436a) drop-shadow(0 0 15px #0009)
   .border, .shape
     border-radius: 50%
     clip-path: none
@@ -202,4 +204,4 @@ jewel-piece[promoted='nebula']
   &::after
     top: -36%
     filter: brightness(0) contrast(2)
-    // background-image: url('../img/smoke.webp')
+    background-image: url('../img/smoke.webp')

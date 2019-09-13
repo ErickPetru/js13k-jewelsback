@@ -2,7 +2,7 @@ import Slot from './Slot'
 import Jewel from './Jewel'
 import MatchChecker from './MatchChecker'
 import MoveChecker from './MoveChecker'
-// import Sounds from './Sounds'
+import Sounds from './Sounds'
 
 export default class Board extends HTMLElement {
   slots = []
@@ -123,7 +123,7 @@ export default class Board extends HTMLElement {
 
   async startLevel (level = Board.startingLevel) {
     if (this.game.levels.length - 1 < level) {
-      // Sounds.won.play()
+      Sounds.won.play()
       this.showGameEnd('Congratulations!', 'You won!')
       this.explodeAll(false)
       return
@@ -154,7 +154,7 @@ export default class Board extends HTMLElement {
     }
 
     if (this.level.name) {
-      // Sounds.won.play()
+      Sounds.won.play()
       this.game.message = this.level.name
       await this.game.delay(2200)
       if (this.level.description) {
@@ -183,7 +183,7 @@ export default class Board extends HTMLElement {
     if (!await this.hasPossibleMovesRemaining()) {
       this.animating = true
       await this.game.delay(300)
-      // Sounds.gameOver.play()
+      Sounds.gameOver.play()
       return this.showGameEnd('Out of luck...', 'Game Over!')
     }
   }
@@ -246,7 +246,7 @@ export default class Board extends HTMLElement {
 
     if (current.promoted === Jewel.specials.nebula &&
       destination.promoted === Jewel.specials.nebula) {
-      // Sounds.gameOver.play()
+      Sounds.gameOver.play()
       return this.showGameEnd('Greed is ugly...', 'Game Over!')
     } else if (current.promoted === Jewel.specials.rainbow &&
       destination.promoted === Jewel.specials.rainbow)
@@ -271,7 +271,7 @@ export default class Board extends HTMLElement {
       this.animating = false
       return true
     } else {
-      // Sounds.gameOver.play()
+      Sounds.gameOver.play()
       this.showGameEnd('No more moves...', 'Game Over!')
       return false
     }
@@ -349,7 +349,7 @@ export default class Board extends HTMLElement {
   async finishExplosion (jewels, refill = true) {
     if (jewels.length === 0) return
 
-    // Sounds.plop.play()
+    Sounds.plop.play()
     this.animating = true
     this.scoreMultiplier++
 
@@ -424,7 +424,7 @@ export default class Board extends HTMLElement {
   async isLevelCompleted () {
     if (this.game.score >= this.level.milestone) {
       if (this.level.index !== this.game.levels.length - 1) {
-        // Sounds.levelUp.play()
+        Sounds.levelUp.play()
         this.game.message = 'Level completed!'
         this.scoreMultiplier = -1
         await this.explodeAll(false)
