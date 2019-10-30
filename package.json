@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/ErickPetru/js13k-jewelsback.git"
   },
-  "images" : {
+  "images": {
     "image_large": "image_large.png",
     "image_thumbnail": "image_thumbnail.png"
   },
@@ -30,23 +30,23 @@
     "build:check": "node ./build/check.js",
     "finish": "npm run build && npm run build:check",
     "finish-with-assets": "npm run finish --assets",
-    "predeploy": "git checkout --orphan gh-pages && git reset --hard && git commit --allow-empty -m \"Init gh-pages branch\" && git checkout master && git worktree add dist gh-pages",
-    "deploy": "cd dist/inlined && git add --all && git commit -m \"Deploy updated\" && git push origin gh-pages"
+    "deploy": "gh-pages -d dist/inlined"
   },
   "browserslist": [
     "last 1 Chrome version"
   ],
   "devDependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/core": "^7.6.4",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "archiver": "^3.1.1",
     "chalk": "^2.4.2",
+    "gh-pages": "^2.1.1",
     "html-inline": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "parcel": "^1.12.3",
+    "parcel": "^1.12.4",
     "pug": "^2.0.4",
     "rimraf": "^3.0.0",
     "serialize-to-js": "^3.0.0",
-    "stylus": "^0.54.5"
+    "stylus": "^0.54.7"
   }
 }
