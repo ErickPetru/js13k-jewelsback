@@ -46,7 +46,7 @@
     "parcel": "^1.12.4",
     "pug": "^2.0.4",
     "rimraf": "^3.0.0",
-    "serialize-to-js": "^3.0.0",
+    "serialize-to-js": "^3.0.1",
     "stylus": "^0.54.7"
   }
 }
